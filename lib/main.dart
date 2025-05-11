@@ -143,171 +143,235 @@ class _HomeState extends State<Home> {
               ),
             ),
             Expanded(
-              child: Container(
-                child: Center(
-                  child: selectedTab == 0
-                      ? GridView.count(
-                          crossAxisCount: 3,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                          padding: const EdgeInsets.all(20),
-                          children: List.generate(6, (index) {
-                            final labels = [
-                              'Eggs',
-                              'Mashed Potatoes',
-                              'Steak',
-                              'Grilled Cheese',
-                              'Boiled Eggs',
-                              'Chicken'
-                            ];
-                            return Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
+              child: Stack(
+                children: [
+                  if (selectedTab == 3) // Show detailed description only for the Help tab
+                    Positioned(
+                      top: 10,
+                      left: 40, // Adjusted to make it touch the black box
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal, // Enable horizontal scrolling
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'What Each Room Does',
+                                style: TextStyle(
+                                  color: Colors.black, // Text color set to black
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                Positioned.fill(
-                                  child: Center(
-                                    child: Icon(
-                                      Icons.menu_book,
-                                      color: Colors.grey[700],
-                                      size: 50,
-                                    ),
-                                  ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Ingredient Room\n'
+                                'Select the ingredients you currently have. You can search for items, add them to your list, and remove them anytime.\n',
+                                style: TextStyle(
+                                  color: Colors.black, // Text color set to black
+                                  fontSize: 16,
                                 ),
-                                Positioned(
-                                  top: 8,
-                                  left: 0,
-                                  right: 0,
-                                  child: Text(
-                                    labels[index],
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      shadows: [
-                                        Shadow(
-                                          blurRadius: 4,
-                                          color: Colors.grey,
-                                          offset: Offset(2, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
+                              ),
+                              Text(
+                                'Recipe Room\n'
+                                'Get recipe suggestions based on the ingredients you\'ve selected. The more you add, the more personalized the results.\n',
+                                style: TextStyle(
+                                  color: Colors.black, // Text color set to black
+                                  fontSize: 16,
                                 ),
-                              ],
-                            );
-                          }),
-                        )
-                      : selectedTab == 1
-                          ? Column(
-                              children: [
-                                Container(
-                                  height: 100,
-                                  margin: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[800],
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.white, width: 2),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      selectedIngredients.isEmpty
-                                          ? 'Selected Ingredients'
-                                          : selectedIngredients.join(', '),
-                                      style: const TextStyle(
+                              ),
+                              Text(
+                                'Saved Recipe Room\n'
+                                'Save your favorite recipes so you can find them easily later.\n',
+                                style: TextStyle(
+                                  color: Colors.black, // Text color set to black
+                                  fontSize: 16,
+                                ),
+                              ),
+                              Text(
+                                'Help Room (You\'re here)\n'
+                                'Use this space to get guidance, ask questions, or report any issues you’re having with the app.',
+                                style: TextStyle(
+                                  color: Colors.black, // Text color set to black
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  Container(
+                    child: Center(
+                      child: selectedTab == 0
+                          ? GridView.count(
+                              crossAxisCount: 3,
+                              mainAxisSpacing: 20,
+                              crossAxisSpacing: 20,
+                              padding: const EdgeInsets.all(20),
+                              children: List.generate(6, (index) {
+                                final labels = [
+                                  'Eggs',
+                                  'Mashed Potatoes',
+                                  'Steak',
+                                  'Grilled Cheese',
+                                  'Boiled Eggs',
+                                  'Chicken'
+                                ];
+                                return Stack(
+                                  children: [
+                                    Container(
+                                      decoration: BoxDecoration(
                                         color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Container(
-                                  height: 50,
-                                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.grey[400]!, width: 1),
-                                  ),
-                                  child: const Center(
-                                    child: Text(
-                                      'White Box',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                Expanded(
-                                  child: GridView.count(
-                                    crossAxisCount: 4, // Adjusted for larger boxes
-                                    mainAxisSpacing: 10,
-                                    crossAxisSpacing: 10,
-                                    padding: const EdgeInsets.all(20),
-                                    children: List.generate(availableIngredients.length, (index) {
-                                      return GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            if (!selectedIngredients.contains(availableIngredients[index])) {
-                                              selectedIngredients.add(availableIngredients[index]);
-                                            }
-                                          });
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
+                                    Positioned.fill(
+                                      child: Center(
+                                        child: Icon(
+                                          Icons.menu_book,
+                                          color: Colors.grey[700],
+                                          size: 50,
+                                        ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 8,
+                                      left: 0,
+                                      right: 0,
+                                      child: Text(
+                                        labels[index],
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          shadows: [
+                                            Shadow(
+                                              blurRadius: 4,
+                                              color: Colors.grey,
+                                              offset: Offset(2, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            )
+                          : selectedTab == 1
+                              ? Column(
+                                  children: [
+                                    Container(
+                                      height: 100,
+                                      margin: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[800],
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.white, width: 2),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          selectedIngredients.isEmpty
+                                              ? 'Selected Ingredients'
+                                              : selectedIngredients.join(', '),
+                                          style: const TextStyle(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(8),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
                                           ),
-                                          child: Center(
-                                            child: Text(
-                                              availableIngredients[index],
-                                              style: const TextStyle(
-                                                color: Colors.black,
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.bold,
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Container(
+                                      height: 50,
+                                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.grey[400]!, width: 1),
+                                      ),
+                                      child: const Center(
+                                        child: Text(
+                                          'combine ingredients',
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    Expanded(
+                                      child: GridView.count(
+                                        crossAxisCount: 4, // Adjusted for larger boxes
+                                        mainAxisSpacing: 10,
+                                        crossAxisSpacing: 10,
+                                        padding: const EdgeInsets.all(20),
+                                        children: List.generate(availableIngredients.length, (index) {
+                                          return GestureDetector(
+                                            onTap: () {
+                                              setState(() {
+                                                if (!selectedIngredients.contains(availableIngredients[index])) {
+                                                  selectedIngredients.add(availableIngredients[index]);
+                                                }
+                                              });
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius: BorderRadius.circular(8),
                                               ),
-                                              textAlign: TextAlign.center,
+                                              child: Center(
+                                                child: Text(
+                                                  availableIngredients[index],
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : selectedTab == 2
+                                  ? const Center(
+                                      child: Text(
+                                        'Saved Recipes Room',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    )
+                                  : const Stack(
+                                      children: [
+                                        Center(
+                                          child: Text(
+                                            'Help Room',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }),
-                                  ),
-                                ),
-                              ],
-                            )
-                      : selectedTab == 2
-                          ? const Center(
-                              child: Text(
-                                'Saved Recipes Room',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            )
-                      : const Center(
-                              child: Text(
-                                'Help Room',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                ),
+                                      ],
+                                    ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
