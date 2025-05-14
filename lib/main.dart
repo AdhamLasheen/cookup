@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
@@ -28,6 +29,8 @@ class _HomeState extends State<Home> {
   final List<String> savedRecipes = []; // List to store saved recipes
   String searchQuery = ''; // Store the search query
   bool isSpinning = false; // Track if the roulette is spinning
+  Map<String, Timer> activeTimers = {}; // Add this for storing multiple timers
+  Map<String, int> timerDurations = {}; // Store remaining time for each timer
 
   void switchToRecipes() {
     setState(() {
@@ -73,6 +76,12 @@ class _HomeState extends State<Home> {
     });
   }
 
+  void switchToTimers() {
+    setState(() {
+      selectedTab = 8; // New tab for timers
+    });
+  }
+
   void startRoulette() async {
     setState(() {
       isSpinning = true;
@@ -90,6 +99,32 @@ class _HomeState extends State<Home> {
     setState(() {
       isSpinning = false; // Stop spinning
     });
+  }
+
+  void startTimer(String name, int totalSeconds) {
+    if (activeTimers.containsKey(name)) {
+      activeTimers[name]?.cancel();
+    }
+    
+    timerDurations[name] = totalSeconds;
+    activeTimers[name] = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        if (timerDurations[name]! > 0) {
+          timerDurations[name] = timerDurations[name]! - 1;
+        } else {
+          timer.cancel();
+          activeTimers.remove(name);
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    for (final timer in activeTimers.values) {
+      timer.cancel();
+    }
+    super.dispose();
   }
 
   // Helper method to build meal type filter buttons
@@ -403,6 +438,11 @@ class _HomeState extends State<Home> {
                             title: Text('recipe roulette'),
                             leading: const Icon(Icons.casino),
                             onTap: switchToRecipeRoulette,
+                          ),
+                          ListTile(
+                            title: const Text('recipe timers'),
+                            leading: const Icon(Icons.timer),
+                            onTap: switchToTimers,
                           ),
                           ListTile(
                             title: Text('help'),
@@ -989,20 +1029,188 @@ class _HomeState extends State<Home> {
                                                         );
                                                       },
                                                     )
-                                              : const Stack(
-                                                  children: [
-                                                    Center(
-                                                      child: Text(
-                                                        'Help Room',
-                                                        style: TextStyle(
-                                                          color: Colors.white,
-                                                          fontSize: 24,
-                                                          fontWeight: FontWeight.bold,
-                                                        ),
+                                              : selectedTab == 8
+                                                  ? Container(
+                                                      padding: const EdgeInsets.all(16),
+                                                      child: Column(
+                                                        children: [
+                                                          const Text(
+                                                            'Recipe Timers',
+                                                            style: TextStyle(
+                                                              color: Colors.black,
+                                                              fontSize: 24,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                          const SizedBox(height: 20),
+                                                          Expanded(
+                                                            child: ListView(
+                                                              children: [
+                                                                Card(
+                                                                  child: ListTile(
+                                                                    title: const Text('Add Timer'),
+                                                                    leading: const Icon(Icons.add),
+                                                                    onTap: () {
+                                                                      showDialog(
+                                                                        context: context,
+                                                                        builder: (context) {
+                                                                          String name = '';
+                                                                          final ValueNotifier<int> hours = ValueNotifier(0);
+                                                                          final ValueNotifier<int> minutes = ValueNotifier(0);
+                                                                    
+                                                                          return StatefulBuilder(
+                                                                            builder: (context, setDialogState) {
+                                                                              return AlertDialog(
+                                                                                title: const Text('Add Timer'),
+                                                                                content: Column(
+                                                                                  mainAxisSize: MainAxisSize.min,
+                                                                                  children: [
+                                                                                    TextField(
+                                                                                      decoration: const InputDecoration(
+                                                                                        labelText: 'Timer Name',
+                                                                                      ),
+                                                                                      onChanged: (value) => name = value,
+                                                                                    ),
+                                                                                    const SizedBox(height: 20),
+                                                                                    Row(
+                                                                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                                                      children: [
+                                                                                        Column(
+                                                                                          children: [
+                                                                                            const Text('Hours'),
+                                                                                            Row(
+                                                                                              children: [
+                                                                                                IconButton(
+                                                                                                  icon: const Icon(Icons.remove),
+                                                                                                  onPressed: () {
+                                                                                                    setDialogState(() {
+                                                                                                      if (hours.value > 0) hours.value--;
+                                                                                                    });
+                                                                                                  },
+                                                                                                ),
+                                                                                                ValueListenableBuilder(
+                                                                                                  valueListenable: hours,
+                                                                                                  builder: (context, value, child) => 
+                                                                                                    Text('$value', style: const TextStyle(fontSize: 20)),
+                                                                                                ),
+                                                                                                IconButton(
+                                                                                                  icon: const Icon(Icons.add),
+                                                                                                  onPressed: () {
+                                                                                                    setDialogState(() {
+                                                                                                      hours.value++;
+                                                                                                    });
+                                                                                                  },
+                                                                                                ),
+                                                                                              ],
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                        Column(
+                                                                                          children: [
+                                                                                            const Text('Minutes'),
+                                                                                            Row(
+                                                                                              children: [
+                                                                                                IconButton(
+                                                                                                  icon: const Icon(Icons.remove),
+                                                                                                  onPressed: () {
+                                                                                                    setDialogState(() {
+                                                                                                      if (minutes.value > 0) minutes.value--;
+                                                                                                    });
+                                                                                                  },
+                                                                                                ),
+                                                                                                ValueListenableBuilder(
+                                                                                                  valueListenable: minutes,
+                                                                                                  builder: (context, value, child) => 
+                                                                                                    Text('$value', style: const TextStyle(fontSize: 20)),
+                                                                                                ),
+                                                                                                IconButton(
+                                                                                                  icon: const Icon(Icons.add),
+                                                                                                  onPressed: () {
+                                                                                                    setDialogState(() {
+                                                                                                      if (minutes.value < 59) minutes.value++;
+                                                                                                      else {
+                                                                                                        minutes.value = 0;
+                                                                                                        hours.value++;
+                                                                                                      }
+                                                                                                    });
+                                                                                                  },
+                                                                                                ),
+                                                                                              ],
+                                                                                            ),
+                                                                                          ],
+                                                                                        ),
+                                                                                      ],
+                                                                                    ),
+                                                                                  ],
+                                                                                ),
+                                                                                actions: [
+                                                                                  TextButton(
+                                                                                    onPressed: () => Navigator.pop(context),
+                                                                                    child: const Text('Cancel'),
+                                                                                  ),
+                                                                                  TextButton(
+                                                                                    onPressed: () {
+                                                                                      if (name.isNotEmpty && (hours.value > 0 || minutes.value > 0)) {
+                                                                                        startTimer(name, (hours.value * 3600) + (minutes.value * 60));
+                                                                                        Navigator.pop(context);
+                                                                                      }
+                                                                                    },
+                                                                                    child: const Text('Start'),
+                                                                                  ),
+                                                                                ],
+                                                                              );
+                                                                            },
+                                                                          );
+                                                                        },
+                                                                      );
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                                ...activeTimers.keys.map((name) {
+                                                                  final remaining = timerDurations[name]!;
+                                                                  final hours = remaining ~/ 3600;
+                                                                  final minutes = (remaining % 3600) ~/ 60;
+                                                                  final seconds = remaining % 60;
+                                                                  final timeString = hours > 0 
+                                                                      ? '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}'
+                                                                      : '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+                                                                  return Card(
+                                                                    child: ListTile(
+                                                                      title: Text(name),
+                                                                      subtitle: Text(timeString),
+                                                                      trailing: IconButton(
+                                                                        icon: const Icon(Icons.stop),
+                                                                        onPressed: () {
+                                                                          activeTimers[name]?.cancel();
+                                                                          setState(() {
+                                                                            activeTimers.remove(name);
+                                                                            timerDurations.remove(name);
+                                                                          });
+                                                                        },
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }).toList(),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
+                                                    )
+                                                  : const Stack(
+                                                      children: [
+                                                        Center(
+                                                          child: Text(
+                                                            'Help Room',
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontSize: 24,
+                                                              fontWeight: FontWeight.bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
-                                                  ],
-                                                ),
                     ),
                   ),
                 ],
