@@ -31,6 +31,56 @@ class _HomeState extends State<Home> {
   bool isSpinning = false; // Track if the roulette is spinning
   Map<String, Timer> activeTimers = {}; // Add this for storing multiple timers
   Map<String, int> timerDurations = {}; // Store remaining time for each timer
+  bool isDarkMode = false; // Track dark mode setting
+  double fontSize = 16.0; // Track font size setting
+  String selectedLanguage = 'English';
+
+  final Map<String, Map<String, String>> translations = {
+    'English': {
+      'menu': 'Menu',
+      'recipes': 'Recipes',
+      'ingredients': 'Ingredients',
+      'saved_recipes': 'Saved Recipes',
+      'recipe_roulette': 'Recipe Roulette',
+      'recipe_timers': 'Recipe Timers',
+      'settings': 'Settings',
+      'help': 'Help',
+    },
+    'Arabic': {
+      'menu': 'القائمة',
+      'recipes': 'وصفات',
+      'ingredients': 'مكونات',
+      'saved_recipes': 'الوصفات المحفوظة',
+      'recipe_roulette': 'عجلة الوصفات',
+      'recipe_timers': 'مؤقتات',
+      'settings': 'إعدادات',
+      'help': 'مساعدة',
+    },
+    'French': {
+      'menu': 'Menu',
+      'recipes': 'Recettes',
+      'ingredients': 'Ingrédients',
+      'saved_recipes': 'Recettes Sauvegardées',
+      'recipe_roulette': 'Roulette de Recettes',
+      'recipe_timers': 'Minuteries',
+      'settings': 'Paramètres',
+      'help': 'Aide',
+    },
+    'Spanish': {
+      'menu': 'Menú',
+      'recipes': 'Recetas',
+      'ingredients': 'Ingredientes',
+      'saved_recipes': 'Recetas Guardadas',
+      'recipe_roulette': 'Ruleta de Recetas',
+      'recipe_timers': 'Temporizadores',
+      'settings': 'Ajustes',
+      'help': 'Ayuda',
+    }
+  };
+
+  String getTranslatedText(String key) {
+    return translations[selectedLanguage]?[key] ?? translations['English']![key]!;
+  }
 
   void switchToRecipes() {
     setState(() {
@@ -79,6 +129,12 @@ class _HomeState extends State<Home> {
   void switchToTimers() {
     setState(() {
       selectedTab = 8; // New tab for timers
+    });
+  }
+
+  void switchToSettings() {
+    setState(() {
+      selectedTab = 9; // New tab for settings
     });
   }
 
@@ -411,7 +467,7 @@ class _HomeState extends State<Home> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Text('Menu',
+                            child: Text(getTranslatedText('menu'),
                                 style: GoogleFonts.lora()
                                     .copyWith(color: Colors.white, fontSize: 35)),
                           ),
@@ -420,34 +476,39 @@ class _HomeState extends State<Home> {
                             thickness: 2,
                           ),
                           ListTile(
-                            title: Text('resipes'),
+                            title: Text(getTranslatedText('recipes')),
                             leading: const Icon(Icons.menu_book_outlined),
                             onTap: switchToRecipes,
                           ),
                           ListTile(
-                            title: Text('ingredients'),
+                            title: Text(getTranslatedText('ingredients')),
                             leading: const Icon(Icons.egg),
                             onTap: switchToIngredients,
                           ),
                           ListTile(
-                            title: Text('saved recipes'),
+                            title: Text(getTranslatedText('saved_recipes')),
                             leading: const Icon(Icons.offline_pin),
                             onTap: switchToSavedRecipes,
                           ),
                           ListTile(
-                            title: Text('recipe roulette'),
+                            title: Text(getTranslatedText('recipe_roulette')),
                             leading: const Icon(Icons.casino),
                             onTap: switchToRecipeRoulette,
                           ),
                           ListTile(
-                            title: const Text('recipe timers'),
+                            title: Text(getTranslatedText('recipe_timers')),
                             leading: const Icon(Icons.timer),
                             onTap: switchToTimers,
                           ),
                           ListTile(
-                            title: Text('help'),
+                            title: Text(getTranslatedText('help')),
                             leading: const Icon(Icons.help),
                             onTap: switchToHelp,
+                          ),
+                          ListTile(
+                            title: Text(getTranslatedText('settings')),
+                            leading: const Icon(Icons.settings, color: Colors.white),
+                            onTap: switchToSettings,
                           ),
                           const Spacer(),
                           Padding(
@@ -1197,20 +1258,93 @@ class _HomeState extends State<Home> {
                                                         ],
                                                       ),
                                                     )
-                                                  : const Stack(
-                                                      children: [
-                                                        Center(
-                                                          child: Text(
-                                                            'Help Room',
-                                                            style: TextStyle(
-                                                              color: Colors.white,
-                                                              fontSize: 24,
-                                                              fontWeight: FontWeight.bold,
-                                                            ),
+                                                  : selectedTab == 9
+                                                      ? Container(
+                                                          padding: const EdgeInsets.all(16),
+                                                          child: Column(
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                                            children: [
+                                                              const Text(
+                                                                'Settings',
+                                                                style: TextStyle(
+                                                                  color: Colors.white,
+                                                                  fontSize: 24,
+                                                                  fontWeight: FontWeight.bold,
+                                                                ),
+                                                              ),
+                                                              const SizedBox(height: 20),
+                                                              Card(
+                                                                child: ListTile(
+                                                                  title: const Text('Dark Mode'),
+                                                                  trailing: Switch(
+                                                                    value: isDarkMode,
+                                                                    onChanged: (value) {
+                                                                      setState(() {
+                                                                        isDarkMode = value;
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Card(
+                                                                child: ListTile(
+                                                                  title: const Text('Font Size'),
+                                                                  trailing: DropdownButton<double>(
+                                                                    value: fontSize,
+                                                                    items: [14.0, 16.0, 18.0, 20.0]
+                                                                        .map((size) => DropdownMenuItem(
+                                                                              value: size,
+                                                                              child: Text('${size.toInt()}'),
+                                                                            ))
+                                                                        .toList(),
+                                                                    onChanged: (value) {
+                                                                      if (value != null) {
+                                                                        setState(() {
+                                                                          fontSize = value;
+                                                                        });
+                                                                      }
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Card(
+                                                                child: ListTile(
+                                                                  title: const Text('Language'),
+                                                                  trailing: DropdownButton<String>(
+                                                                    value: selectedLanguage,
+                                                                    items: ['English', 'Arabic', 'French', 'Spanish']
+                                                                        .map((lang) => DropdownMenuItem(
+                                                                              value: lang,
+                                                                              child: Text(lang),
+                                                                            ))
+                                                                        .toList(),
+                                                                    onChanged: (value) {
+                                                                      if (value != null) {
+                                                                        setState(() {
+                                                                          selectedLanguage = value;
+                                                                        });
+                                                                      }
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
                                                           ),
+                                                        )
+                                                      : const Stack(
+                                                          children: [
+                                                            Center(
+                                                              child: Text(
+                                                                'Help Room',
+                                                                style: TextStyle(
+                                                                  color: Colors.white,
+                                                                  fontSize: 24,
+                                                                  fontWeight: FontWeight.bold,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
-                                                    ),
                     ),
                   ),
                 ],
