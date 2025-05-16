@@ -433,54 +433,45 @@ class _HomeState extends State<Home> {
         data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
         child: Stack(
           children: [
-            Scaffold(
-              body: Row(
-                children: [
-                  NavigationRail(
-                    selectedIndex: selectedTab > 6 ? previousTab : selectedTab,
-                    onDestinationSelected: (index) {
-                      setState(() {
-                        selectedTab = index;
-                      });
-                    },
-                    labelType: NavigationRailLabelType.all,
-                    backgroundColor: isDarkMode ? Colors.black : Colors.white,
-                    destinations: [
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.menu_book_outlined),
-                        label: Text(getTranslatedText('recipes')),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.egg),
-                        label: Text(getTranslatedText('ingredients')),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.offline_pin),
-                        label: Text(getTranslatedText('saved_recipes')),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.casino),
-                        label: Text(getTranslatedText('recipe_roulette')),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.timer),
-                        label: Text(getTranslatedText('recipe_timers')),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.settings),
-                        label: Text(getTranslatedText('settings')),
-                      ),
-                      NavigationRailDestination(
-                        icon: const Icon(Icons.help),
-                        label: Text(getTranslatedText('help')),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: _buildBody(selectedTab),
-                  ),
-                ],
-              ),
+            AdaptiveScaffold(
+              internalAnimations: false,
+              selectedIndex: selectedTab > 6 ? previousTab : selectedTab,
+              onSelectedIndexChange: (index) {
+                setState(() {
+                  selectedTab = index;
+                });
+              },
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.menu_book_outlined),
+                  label: getTranslatedText('recipes'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.egg),
+                  label: getTranslatedText('ingredients'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.offline_pin),
+                  label: getTranslatedText('saved_recipes'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.casino),
+                  label: getTranslatedText('recipe_roulette'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.timer),
+                  label: getTranslatedText('recipe_timers'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.settings),
+                  label: getTranslatedText('settings'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.help),
+                  label: getTranslatedText('help'),
+                ),
+              ],
+              body: (_) => _buildBody(selectedTab),
             ),
             if (selectedTab == 7) 
               Scaffold(
