@@ -48,6 +48,25 @@ class _HomeState extends State<Home> {
       'settings': 'Settings',
       'help': 'Help',
       'search_for_recipes': 'Search for Recipes',
+      'recipe_details': 'Recipe Details',
+      'recipe_prefix': 'Recipe:',
+      'ingredients_prefix': 'Ingredients:',
+      'instructions_prefix': 'Instructions:',
+      'search_recipes_hint': 'Search recipes...',
+      'no_saved_recipes': 'No saved recipes yet.',
+      'contains': 'Contains:',
+      'press_spin': 'Press the button to spin!',
+      'spin_button': 'Spin the Roulette',
+      'add_timer': 'Add Timer',
+      'timer_name': 'Timer Name',
+      'hours': 'Hours',
+      'minutes': 'Minutes',
+      'start': 'Start',
+      'cancel': 'Cancel',
+      'breakfast': 'Breakfast',
+      'lunch': 'Lunch',
+      'dinner': 'Dinner',
+      'dessert': 'Dessert',
     },
     'Arabic': {
       'menu': 'القائمة',
@@ -59,6 +78,25 @@ class _HomeState extends State<Home> {
       'settings': 'إعدادات',
       'help': 'مساعدة',
       'search_for_recipes': 'البحث عن الوصفات',
+      'recipe_details': 'تفاصيل الوصفة',
+      'recipe_prefix': 'الوصفة:',
+      'ingredients_prefix': 'المكونات:',
+      'instructions_prefix': 'التعليمات:',
+      'search_recipes_hint': 'البحث عن الوصفات...',
+      'no_saved_recipes': 'لا توجد وصفات محفوظة بعد.',
+      'contains': 'يحتوي على:',
+      'press_spin': 'اضغط على الزر للدوران!',
+      'spin_button': 'تدوير العجلة',
+      'add_timer': 'إضافة مؤقت',
+      'timer_name': 'اسم المؤقت',
+      'hours': 'ساعات',
+      'minutes': 'دقائق',
+      'start': 'بدء',
+      'cancel': 'إلغاء',
+      'breakfast': 'فطور',
+      'lunch': 'غداء',
+      'dinner': 'عشاء',
+      'dessert': 'حلويات',
     },
     'French': {
       'menu': 'Menu',
@@ -70,6 +108,25 @@ class _HomeState extends State<Home> {
       'settings': 'Paramètres',
       'help': 'Aide',
       'search_for_recipes': 'Rechercher des Recettes',
+      'recipe_details': 'Détails de la Recette',
+      'recipe_prefix': 'Recette:',
+      'ingredients_prefix': 'Ingrédients:',
+      'instructions_prefix': 'Instructions:',
+      'search_recipes_hint': 'Rechercher des recettes...',
+      'no_saved_recipes': 'Aucune recette sauvegardée.',
+      'contains': 'Contient:',
+      'press_spin': 'Appuyez sur le bouton pour tourner!',
+      'spin_button': 'Tourner la Roulette',
+      'add_timer': 'Ajouter un Minuteur',
+      'timer_name': 'Nom du Minuteur',
+      'hours': 'Heures',
+      'minutes': 'Minutes',
+      'start': 'Démarrer',
+      'cancel': 'Annuler',
+      'breakfast': 'Petit-déjeuner',
+      'lunch': 'Déjeuner',
+      'dinner': 'Dîner',
+      'dessert': 'Dessert',
     },
     'Spanish': {
       'menu': 'Menú',
@@ -81,10 +138,32 @@ class _HomeState extends State<Home> {
       'settings': 'Ajustes',
       'help': 'Ayuda',
       'search_for_recipes': 'Buscar Recetas',
+      'recipe_details': 'Detalles de la Receta',
+      'recipe_prefix': 'Receta:',
+      'ingredients_prefix': 'Ingredientes:',
+      'instructions_prefix': 'Instrucciones:',
+      'search_recipes_hint': 'Buscar recetas...',
+      'no_saved_recipes': 'No hay recetas guardadas.',
+      'contains': 'Contiene:',
+      'press_spin': '¡Presiona el botón para girar!',
+      'spin_button': 'Girar la Ruleta',
+      'add_timer': 'Agregar Temporizador',
+      'timer_name': 'Nombre del Temporizador',
+      'hours': 'Horas',
+      'minutes': 'Minutos',
+      'start': 'Iniciar',
+      'cancel': 'Cancelar',
+      'breakfast': 'Desayuno',
+      'lunch': 'Almuerzo',
+      'dinner': 'Cena',
+      'dessert': 'Postre',
     }
   };
 
-  String getTranslatedText(String key) {
+  String getTranslatedText(String key, {bool keepEnglish = false}) {
+    if (keepEnglish) {
+      return translations['English']![key]!;
+    }
     return translations[selectedLanguage]?[key] ?? translations['English']![key]!;
   }
 
@@ -212,7 +291,7 @@ class _HomeState extends State<Home> {
                           ),
                         ),
                         subtitle: Text(
-                          'Contains: ${matchingIngredients.join(", ")}',
+                          '${getTranslatedText('contains')} ${matchingIngredients.join(", ")}',
                           style: TextStyle(
                             color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                           ),
@@ -303,73 +382,30 @@ class _HomeState extends State<Home> {
   }
 
   Widget buildMealTypeFilters() {
+    final mealTypes = ['breakfast', 'lunch', 'dinner', 'dessert'];
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        FilterChip(
-          label: const Text('Breakfast'),
-          selected: selectedMealType == 'breakfast',
-          onSelected: (selected) {
-            setState(() {
-              selectedMealType = selected ? 'breakfast' : '';
-            });
-          },
-          backgroundColor: Colors.white,
-          selectedColor: Colors.black,
-          checkmarkColor: Colors.white,
-          labelStyle: TextStyle(
-            color: selectedMealType == 'breakfast' ? Colors.white : Colors.black,
+      children: mealTypes.map((type) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5),
+          child: FilterChip(
+            label: Text(getTranslatedText(type)),
+            selected: selectedMealType == type,
+            onSelected: (selected) {
+              setState(() {
+                selectedMealType = selected ? type : '';
+              });
+            },
+            backgroundColor: Colors.white,
+            selectedColor: Colors.black,
+            checkmarkColor: Colors.white,
+            labelStyle: TextStyle(
+              color: selectedMealType == type ? Colors.white : Colors.black,
+            ),
           ),
-        ),
-        const SizedBox(width: 10),
-        FilterChip(
-          label: const Text('Lunch'),
-          selected: selectedMealType == 'lunch',
-          onSelected: (selected) {
-            setState(() {
-              selectedMealType = selected ? 'lunch' : '';
-            });
-          },
-          backgroundColor: Colors.white,
-          selectedColor: Colors.black,
-          checkmarkColor: Colors.white,
-          labelStyle: TextStyle(
-            color: selectedMealType == 'lunch' ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(width: 10),
-        FilterChip(
-          label: const Text('Dinner'),
-          selected: selectedMealType == 'dinner',
-          onSelected: (selected) {
-            setState(() {
-              selectedMealType = selected ? 'dinner' : '';
-            });
-          },
-          backgroundColor: Colors.white,
-          selectedColor: Colors.black,
-          checkmarkColor: Colors.white,
-          labelStyle: TextStyle(
-            color: selectedMealType == 'dinner' ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(width: 10),
-        FilterChip(
-          label: const Text('Dessert'),
-          selected: selectedMealType == 'dessert',
-          onSelected: (selected) {
-            setState(() {
-              selectedMealType = selected ? 'dessert' : '';
-            });
-          },
-          backgroundColor: Colors.white,
-          selectedColor: Colors.black,
-          checkmarkColor: Colors.white,
-          labelStyle: TextStyle(
-            color: selectedMealType == 'dessert' ? Colors.white : Colors.black,
-          ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
@@ -498,7 +534,7 @@ class _HomeState extends State<Home> {
             ),
             Expanded(
               child: Text(
-                'Recipe Details',
+                getTranslatedText('recipe_details'),
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                   fontSize: 20,
@@ -537,7 +573,7 @@ class _HomeState extends State<Home> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Recipe: $selectedRecipe',
+                  '${getTranslatedText('recipe_prefix')} $selectedRecipe',
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
                     fontSize: 24,
@@ -546,7 +582,7 @@ class _HomeState extends State<Home> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Ingredients:\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
+                  '${getTranslatedText('ingredients_prefix')}\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
                     fontSize: 16,
@@ -554,7 +590,7 @@ class _HomeState extends State<Home> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Instructions:\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
+                  '${getTranslatedText('instructions_prefix')}\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
                   style: TextStyle(
                     color: isDarkMode ? Colors.white : Colors.black,
                     fontSize: 16,
@@ -581,7 +617,7 @@ class _HomeState extends State<Home> {
             },
             style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
             decoration: InputDecoration(
-              hintText: 'Search recipes...',
+              hintText: getTranslatedText('search_recipes_hint'),
               hintStyle: TextStyle(color: isDarkMode ? Colors.grey : Colors.grey[600]),
               prefixIcon: Icon(Icons.search, color: isDarkMode ? Colors.grey : Colors.grey[600]),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -613,6 +649,9 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildRecipeCard(String recipe) {
+    // Add screen width check
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    
     return GestureDetector(
       onTap: () => switchToRecipeDetails(recipe),
       child: Container(
@@ -626,7 +665,10 @@ class _HomeState extends State<Home> {
               child: Center(
                 child: Icon(
                   Icons.menu_book,
-                  color: isDarkMode ? Colors.white : Colors.grey[700],
+                  // Change color based on screen size
+                  color: isSmallScreen 
+                      ? (isDarkMode ? Colors.grey[700] : Colors.grey[300])
+                      : Colors.black,
                   size: 50,
                 ),
               ),
@@ -772,7 +814,7 @@ class _HomeState extends State<Home> {
     return savedRecipes.isEmpty
       ? Center(
           child: Text(
-            'No saved recipes yet.',
+            getTranslatedText('no_saved_recipes'),
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
               fontSize: 18,
@@ -841,7 +883,7 @@ class _HomeState extends State<Home> {
                       child: Text(
                         selectedRecipe.isNotEmpty
                             ? selectedRecipe
-                            : 'Press the button to spin!',
+                            : getTranslatedText('press_spin'),
                         style: TextStyle(
                           color: isDarkMode ? Colors.white : Colors.black,
                           fontSize: 24,
@@ -854,7 +896,7 @@ class _HomeState extends State<Home> {
                     ElevatedButton.icon(
                       onPressed: startRoulette,
                       icon: const Icon(Icons.casino),
-                      label: const Text('Spin the Roulette'),
+                      label: Text(getTranslatedText('spin_button')),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 10),
@@ -875,7 +917,7 @@ class _HomeState extends State<Home> {
       child: Column(
         children: [
           Text(
-            'Recipe Timers',
+            getTranslatedText('recipe_timers'),
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
               fontSize: 24,
@@ -888,7 +930,7 @@ class _HomeState extends State<Home> {
               children: [
                 Card(
                   child: ListTile(
-                    title: const Text('Add Timer'),
+                    title: Text(getTranslatedText('add_timer')),
                     leading: const Icon(Icons.add),
                     onTap: () {
                       showDialog(
@@ -902,13 +944,13 @@ class _HomeState extends State<Home> {
                           return StatefulBuilder(
                             builder: (context, setDialogState) {
                               return AlertDialog(
-                                title: const Text('Add Timer'),
+                                title: Text(getTranslatedText('add_timer')),
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     TextField(
                                       decoration: InputDecoration(
-                                        labelText: 'Timer Name',
+                                        labelText: getTranslatedText('timer_name'),
                                         errorText: showError ? 'Name required' : null,
                                         errorStyle: const TextStyle(color: Colors.red),
                                       ),
@@ -927,7 +969,7 @@ class _HomeState extends State<Home> {
                                       children: [
                                         Column(
                                           children: [
-                                            const Text('Hours'),
+                                            Text(getTranslatedText('hours')),
                                             Row(
                                               children: [
                                                 IconButton(
@@ -957,7 +999,7 @@ class _HomeState extends State<Home> {
                                         ),
                                         Column(
                                           children: [
-                                            const Text('Minutes'),
+                                            Text(getTranslatedText('minutes')),
                                             Row(
                                               children: [
                                                 IconButton(
@@ -996,7 +1038,7 @@ class _HomeState extends State<Home> {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: const Text('Cancel'),
+                                    child: Text(getTranslatedText('cancel')),
                                   ),
                                   TextButton(
                                     onPressed: () {
@@ -1011,7 +1053,7 @@ class _HomeState extends State<Home> {
                                         Navigator.pop(context);
                                       }
                                     },
-                                    child: const Text('Start'),
+                                    child: Text(getTranslatedText('start')),
                                   ),
                                 ],
                               );
@@ -1062,7 +1104,7 @@ class _HomeState extends State<Home> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Settings',
+            getTranslatedText('settings'),
             style: TextStyle(
               color: isDarkMode ? Colors.white : Colors.black,
               fontSize: 24,
