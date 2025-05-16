@@ -15,4 +15,4 @@ jobs:
           flutter-version: 3.29.3
       - uses: bluefireteam/flutter-gh-pages@v9
         with:
-          baseHref: /arc/
+          baseHref: /cookup/
