@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import 'dart:math' as math; // Add this import at the top with other imports
 
 void main() {
   runApp(const MyApp());
@@ -45,6 +46,7 @@ class _HomeState extends State<Home> {
       'recipe_timers': 'Recipe Timers',
       'settings': 'Settings',
       'help': 'Help',
+      'search_for_recipes': 'Search for Recipes',
     },
     'Arabic': {
       'menu': 'القائمة',
@@ -55,6 +57,7 @@ class _HomeState extends State<Home> {
       'recipe_timers': 'مؤقتات',
       'settings': 'إعدادات',
       'help': 'مساعدة',
+      'search_for_recipes': 'البحث عن الوصفات',
     },
     'French': {
       'menu': 'Menu',
@@ -65,6 +68,7 @@ class _HomeState extends State<Home> {
       'recipe_timers': 'Minuteries',
       'settings': 'Paramètres',
       'help': 'Aide',
+      'search_for_recipes': 'Rechercher des Recettes',
     },
     'Spanish': {
       'menu': 'Menú',
@@ -75,6 +79,7 @@ class _HomeState extends State<Home> {
       'recipe_timers': 'Temporizadores',
       'settings': 'Ajustes',
       'help': 'Ayuda',
+      'search_for_recipes': 'Buscar Recetas',
     }
   };
 
@@ -106,17 +111,12 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void switchToRecipeDetails(String recipeName) {
-    setState(() {
-      selectedTab = 4; // New tab for recipe details
-      selectedRecipe = recipeName; // Store the selected recipe name
-    });
-  }
-
   void switchToFilteredRecipes() {
-    setState(() {
-      selectedTab = 5; // New tab for filtered recipes
-    });
+    if (selectedIngredients.isNotEmpty) {
+      setState(() {
+        selectedTab = 5;
+      });
+    }
   }
 
   void switchToRecipeRoulette() {
@@ -143,17 +143,24 @@ class _HomeState extends State<Home> {
       isSpinning = true;
     });
 
-    final recipes = recipeDetails.keys.toList();
+    final random = math.Random();
+    final recipes = recipeDetails.keys.toList()..shuffle(random);
+    
+    // Show more random recipes while spinning
     for (int i = 0; i < 20; i++) {
-      await Future.delayed(const Duration(milliseconds: 100), () {
+      await Future.delayed(Duration(milliseconds: 100 + (i * 10)), () {
         setState(() {
-          selectedRecipe = recipes[i % recipes.length]; // Cycle through recipes
+          selectedRecipe = recipes[random.nextInt(recipes.length)];
         });
       });
     }
 
-    setState(() {
-      isSpinning = false; // Stop spinning
+    // Final selection
+    await Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() {
+        selectedRecipe = recipes[random.nextInt(recipes.length)];
+        isSpinning = false;
+      });
     });
   }
 
@@ -256,31 +263,38 @@ class _HomeState extends State<Home> {
   }
 
   List<String> getFilteredRecipes() {
+    if (selectedIngredients.isEmpty) {
+      return [];
+    }
+
     return recipeDetails.keys.where((recipe) {
-      final ingredients = recipeDetails[recipe]?['ingredients']?.toLowerCase() ?? '';
-      final mealType = recipeDetails[recipe]?['mealType']?.toLowerCase() ?? '';
-
-      // If a meal type is selected, filter by it
-      if (selectedMealType.isNotEmpty && mealType != selectedMealType) {
-        return false;
-      }
-
-      final requiredIngredients = ingredients
+      String ingredients = recipeDetails[recipe]?['ingredients']?.toLowerCase() ?? '';
+      
+      // Convert ingredients to a list
+      List<String> recipeIngredients = ingredients
           .split('\n')
-          .map((line) => line.replaceAll(RegExp(r'^-\s*'), ''))
-          .map((line) => line.split(' ').skip(1).join(' '))
-          .map((line) => line.trim().toLowerCase())
+          .map((line) => line.trim().replaceAll(RegExp(r'^-\s*'), ''))
           .where((line) => line.isNotEmpty)
           .toList();
 
-      return requiredIngredients.every((ingredient) {
-        return selectedIngredients.any((selected) =>
-            ingredient.contains(selected.toLowerCase()) || selected.toLowerCase().contains(ingredient));
+      // Check if recipe contains any of the selected ingredients
+      return selectedIngredients.any((selected) {
+        return recipeIngredients.any((ingredient) =>
+            ingredient.toLowerCase().contains(selected.toLowerCase()));
       });
     }).toList();
   }
 
   String selectedRecipe = ''; // Store the selected recipe name
+  int previousTab = 0; // Add this to track where we came from
+
+  void switchToRecipeDetails(String recipeName) {
+    setState(() {
+      previousTab = selectedTab; // Store current tab before switching
+      selectedTab = 4; // New tab for recipe details
+      selectedRecipe = recipeName; // Store the selected recipe name
+    });
+  }
 
   Map<String, Map<String, dynamic>> recipeDetails = {
     'Eggs': {
@@ -371,6 +385,12 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    // Add these color variables at the start of build method
+    final backgroundColor = isDarkMode ? Colors.black : const Color.fromRGBO(0, 0, 0, 0.122);
+    final cardColor = isDarkMode ? Colors.grey[850] : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.black;
+    final borderColor = isDarkMode ? Colors.grey[600] : Colors.grey[400];
+
     final allIngredients = [
       'Eggs',
       'Potatoes',
@@ -447,9 +467,9 @@ class _HomeState extends State<Home> {
         .toList(); // Filter out selected ingredients
 
     return Material(
-      color: const Color.fromRGBO(0, 0, 0, 0.122),
+      color: backgroundColor,
       child: Theme(
-        data: ThemeData.dark(),
+        data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -460,7 +480,7 @@ class _HomeState extends State<Home> {
                   Expanded(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.black87,
+                        color: isDarkMode ? Colors.grey[900] : Colors.black87,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
@@ -476,37 +496,37 @@ class _HomeState extends State<Home> {
                             thickness: 2,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('recipes')),
-                            leading: const Icon(Icons.menu_book_outlined),
+                            title: Text(getTranslatedText('recipes'), style: const TextStyle(color: Colors.white)),
+                            leading: const Icon(Icons.menu_book_outlined, color: Colors.white),
                             onTap: switchToRecipes,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('ingredients')),
-                            leading: const Icon(Icons.egg),
+                            title: Text(getTranslatedText('ingredients'), style: const TextStyle(color: Colors.white)),
+                            leading: const Icon(Icons.egg, color: Colors.white),
                             onTap: switchToIngredients,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('saved_recipes')),
-                            leading: const Icon(Icons.offline_pin),
+                            title: Text(getTranslatedText('saved_recipes'), style: const TextStyle(color: Colors.white)),
+                            leading: const Icon(Icons.offline_pin, color: Colors.white),
                             onTap: switchToSavedRecipes,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('recipe_roulette')),
-                            leading: const Icon(Icons.casino),
+                            title: Text(getTranslatedText('recipe_roulette'), style: const TextStyle(color: Colors.white)),
+                            leading: const Icon(Icons.casino, color: Colors.white),
                             onTap: switchToRecipeRoulette,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('recipe_timers')),
-                            leading: const Icon(Icons.timer),
+                            title: Text(getTranslatedText('recipe_timers'), style: const TextStyle(color: Colors.white)),
+                            leading: const Icon(Icons.timer, color: Colors.white),
                             onTap: switchToTimers,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('help')),
-                            leading: const Icon(Icons.help),
+                            title: Text(getTranslatedText('help'), style: const TextStyle(color: Colors.white)),
+                            leading: const Icon(Icons.help, color: Colors.white),
                             onTap: switchToHelp,
                           ),
                           ListTile(
-                            title: Text(getTranslatedText('settings')),
+                            title: Text(getTranslatedText('settings'), style: const TextStyle(color: Colors.white)),
                             leading: const Icon(Icons.settings, color: Colors.white),
                             onTap: switchToSettings,
                           ),
@@ -516,7 +536,7 @@ class _HomeState extends State<Home> {
                             child: Text(
                               'Adham Lasheen',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: textColor,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -546,7 +566,7 @@ class _HomeState extends State<Home> {
                               Text(
                                 'What Each Room Does',
                                 style: TextStyle(
-                                  color: Colors.black, // Text color set to black
+                                  color: textColor, // Text color set to dynamic
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -556,7 +576,7 @@ class _HomeState extends State<Home> {
                                 'Ingredient Room\n'
                                 'Select the ingredients you currently have. You can search for items, add them to your list, and remove them anytime.\n',
                                 style: TextStyle(
-                                  color: Colors.black, // Text color set to black
+                                  color: textColor, // Text color set to dynamic
                                   fontSize: 16,
                                 ),
                               ),
@@ -564,7 +584,7 @@ class _HomeState extends State<Home> {
                                 'Recipe Room\n'
                                 'Get recipe suggestions based on the ingredients you\'ve selected. The more you add, the more personalized the results.\n',
                                 style: TextStyle(
-                                  color: Colors.black, // Text color set to black
+                                  color: textColor, // Text color set to dynamic
                                   fontSize: 16,
                                 ),
                               ),
@@ -572,7 +592,7 @@ class _HomeState extends State<Home> {
                                 'Saved Recipe Room\n'
                                 'Save your favorite recipes so you can find them easily later.\n',
                                 style: TextStyle(
-                                  color: Colors.black, // Text color set to black
+                                  color: textColor, // Text color set to dynamic
                                   fontSize: 16,
                                 ),
                               ),
@@ -580,7 +600,7 @@ class _HomeState extends State<Home> {
                                 'Help Room (You\'re here)\n'
                                 'Use this space to get guidance, ask questions, or report any issues you’re having with the app.',
                                 style: TextStyle(
-                                  color: Colors.black, // Text color set to black
+                                  color: textColor, // Text color set to dynamic
                                   fontSize: 16,
                                 ),
                               ),
@@ -602,16 +622,16 @@ class _HomeState extends State<Home> {
                                         searchQuery = value.toLowerCase(); // Update search query
                                       });
                                     },
-                                    style: const TextStyle(color: Colors.black), // Set text color to black
+                                    style: TextStyle(color: textColor), // Set text color dynamically
                                     decoration: InputDecoration(
                                       hintText: 'Search recipes...',
-                                      hintStyle: const TextStyle(color: Colors.grey), // Hint text color
-                                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                                      hintStyle: TextStyle(color: borderColor), // Hint text color dynamically
+                                      prefixIcon: Icon(Icons.search, color: borderColor),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white,
+                                      fillColor: cardColor,
                                     ),
                                   ),
                                 ),
@@ -638,7 +658,7 @@ class _HomeState extends State<Home> {
                                           children: [
                                             Container(
                                               decoration: BoxDecoration(
-                                                color: Colors.white,
+                                                color: cardColor,
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                             ),
@@ -646,7 +666,7 @@ class _HomeState extends State<Home> {
                                               child: Center(
                                                 child: Icon(
                                                   Icons.menu_book,
-                                                  color: Colors.grey[700],
+                                                  color: isDarkMode ? Colors.white : Colors.grey[700],
                                                   size: 50,
                                                 ),
                                               ),
@@ -658,13 +678,13 @@ class _HomeState extends State<Home> {
                                               child: Text(
                                                 recipe,
                                                 style: TextStyle(
-                                                  color: Colors.black,
+                                                  color: textColor,
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold,
                                                   shadows: [
                                                     Shadow(
                                                       blurRadius: 4,
-                                                      color: Colors.grey,
+                                                      color: borderColor!,
                                                       offset: Offset(2, 2),
                                                     ),
                                                   ],
@@ -687,18 +707,18 @@ class _HomeState extends State<Home> {
                                     Row(
                                       children: [
                                         IconButton(
-                                          icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                          icon: Icon(Icons.arrow_back, color: textColor),
                                           onPressed: () {
                                             setState(() {
-                                              selectedTab = 6;
+                                              selectedTab = previousTab; // Go back to previous tab
                                             });
                                           },
                                         ),
-                                        const Expanded(
+                                        Expanded(
                                           child: Text(
                                             'Recipe Details',
                                             style: TextStyle(
-                                              color: Colors.white,
+                                              color: textColor,
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
                                             ),
@@ -728,7 +748,7 @@ class _HomeState extends State<Home> {
                                         margin: const EdgeInsets.all(16.0),
                                         padding: const EdgeInsets.all(16.0),
                                         decoration: BoxDecoration(
-                                          color: Colors.white,
+                                          color: cardColor,
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Column(
@@ -736,8 +756,8 @@ class _HomeState extends State<Home> {
                                           children: [
                                             Text(
                                               'Recipe: $selectedRecipe',
-                                              style: const TextStyle(
-                                                color: Colors.black,
+                                              style: TextStyle(
+                                                color: textColor,
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -745,16 +765,16 @@ class _HomeState extends State<Home> {
                                             const SizedBox(height: 16),
                                             Text(
                                               'Ingredients:\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
-                                              style: const TextStyle(
-                                                color: Colors.black,
+                                              style: TextStyle(
+                                                color: textColor,
                                                 fontSize: 16,
                                               ),
                                             ),
                                             const SizedBox(height: 16),
                                             Text(
                                               'Instructions:\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
-                                              style: const TextStyle(
-                                                color: Colors.black,
+                                              style: TextStyle(
+                                                color: textColor,
                                                 fontSize: 16,
                                               ),
                                             ),
@@ -774,9 +794,9 @@ class _HomeState extends State<Home> {
                                           ), // Adjust height dynamically for each row
                                           margin: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
-                                            color: Colors.white, // Changed to white
+                                            color: cardColor,
                                             borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(color: Colors.grey[400]!, width: 2),
+                                            border: Border.all(color: borderColor!, width: 2),
                                           ),
                                           child: Center(
                                             child: Wrap(
@@ -795,17 +815,17 @@ class _HomeState extends State<Home> {
                                                       vertical: 8,
                                                     ),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white,
+                                                      color: cardColor,
                                                       borderRadius: BorderRadius.circular(8),
                                                       border: Border.all(
-                                                        color: Colors.grey[400]!,
+                                                        color: borderColor!,
                                                         width: 2,
                                                       ),
                                                     ),
                                                     child: Text(
                                                       ingredient,
-                                                      style: const TextStyle(
-                                                        color: Colors.black,
+                                                      style: TextStyle(
+                                                        color: textColor,
                                                         fontSize: 14,
                                                         fontWeight: FontWeight.bold,
                                                       ),
@@ -836,10 +856,10 @@ class _HomeState extends State<Home> {
                                                 width: 2,
                                               ),
                                             ),
-                                            child: const Text(
-                                              'Search for Recipes',
+                                            child: Text(
+                                              getTranslatedText('search_for_recipes'),
                                               style: TextStyle(
-                                                color: Colors.black,
+                                                color: textColor,
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -854,7 +874,15 @@ class _HomeState extends State<Home> {
                                             mainAxisSpacing: 10,
                                             crossAxisSpacing: 10,
                                             padding: const EdgeInsets.all(20),
-                                            children: allIngredients.map((ingredient) {
+                                            children: allIngredients
+                                                .where((ingredient) {
+                                                  // Filter ingredients based on selected meal type
+                                                  if (selectedMealType.isEmpty) return true;
+                                                  return recipeDetails.values.any((recipe) =>
+                                                      recipe['mealType'] == selectedMealType &&
+                                                      recipe['ingredients'].toLowerCase().contains(ingredient.toLowerCase()));
+                                                })
+                                                .map((ingredient) {
                                               final isSelected = selectedIngredients.contains(ingredient);
 
                                               return GestureDetector(
@@ -869,10 +897,10 @@ class _HomeState extends State<Home> {
                                                 },
                                                 child: Container(
                                                   decoration: BoxDecoration(
-                                                    color: isSelected ? Colors.black : Colors.white, // Toggle color
+                                                    color: isSelected ? Colors.black : cardColor, // Toggle color
                                                     borderRadius: BorderRadius.circular(8),
                                                     border: Border.all(
-                                                      color: Colors.grey[400]!,
+                                                      color: borderColor!,
                                                       width: 2,
                                                     ),
                                                   ),
@@ -880,7 +908,7 @@ class _HomeState extends State<Home> {
                                                     child: Text(
                                                       ingredient,
                                                       style: TextStyle(
-                                                        color: isSelected ? Colors.white : Colors.black, // Toggle text color
+                                                        color: isSelected ? Colors.white : textColor, // Toggle text color
                                                         fontSize: 14,
                                                         fontWeight: FontWeight.bold,
                                                       ),
@@ -901,17 +929,17 @@ class _HomeState extends State<Home> {
                                             Row(
                                               children: [
                                                 IconButton(
-                                                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                                  icon: Icon(Icons.arrow_back, color: textColor),
                                                   onPressed: () {
                                                     setState(() {
                                                       selectedTab = 1; // Go back to the ingredients tab
                                                     });
                                                   },
                                                 ),
-                                                const Text(
+                                                Text(
                                                   'Recipes You Can Make',
                                                   style: TextStyle(
-                                                    color: Colors.white,
+                                                    color: textColor,
                                                     fontSize: 20,
                                                     fontWeight: FontWeight.bold,
                                                   ),
@@ -933,7 +961,7 @@ class _HomeState extends State<Home> {
                                                       children: [
                                                         Container(
                                                           decoration: BoxDecoration(
-                                                            color: Colors.white,
+                                                            color: cardColor,
                                                             borderRadius: BorderRadius.circular(12),
                                                           ),
                                                         ),
@@ -941,7 +969,7 @@ class _HomeState extends State<Home> {
                                                           child: Center(
                                                             child: Icon(
                                                               Icons.menu_book,
-                                                              color: Colors.grey[700],
+                                                              color: isDarkMode ? Colors.white : Colors.grey[700],
                                                               size: 50,
                                                             ),
                                                           ),
@@ -953,13 +981,13 @@ class _HomeState extends State<Home> {
                                                           child: Text(
                                                             recipe,
                                                             style: TextStyle(
-                                                              color: Colors.black,
+                                                              color: textColor,
                                                               fontSize: 16,
                                                               fontWeight: FontWeight.bold,
                                                               shadows: [
                                                                 Shadow(
                                                                   blurRadius: 4,
-                                                                  color: Colors.grey,
+                                                                  color: borderColor!,
                                                                   offset: Offset(2, 2),
                                                                 ),
                                                               ],
@@ -982,30 +1010,32 @@ class _HomeState extends State<Home> {
                                                 Row(
                                                   children: [
                                                     IconButton(
-                                                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                                                      icon: Icon(Icons.arrow_back, color: textColor),
                                                       onPressed: () {
                                                         setState(() {
                                                           selectedTab = 0; // Go back to the recipe book
                                                         });
                                                       },
                                                     ),
-                                                    const Text(
+                                                    Text(
                                                       'Recipe Roulette',
                                                       style: TextStyle(
-                                                        color: Colors.white,
+                                                        color: textColor,
                                                         fontSize: 20,
                                                         fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
+                                                buildMealTypeFilters(), // Add filters here
+                                                const SizedBox(height: 10),
                                                 Expanded(
                                                   child: Center(
                                                     child: isSpinning
                                                         ? Text(
                                                             selectedRecipe,
-                                                            style: const TextStyle(
-                                                              color: Colors.black,
+                                                            style: TextStyle(
+                                                              color: textColor,
                                                               fontSize: 24,
                                                               fontWeight: FontWeight.bold,
                                                             ),
@@ -1023,8 +1053,8 @@ class _HomeState extends State<Home> {
                                                                   selectedRecipe.isNotEmpty
                                                                       ? selectedRecipe
                                                                       : 'Press the button to spin!',
-                                                                  style: const TextStyle(
-                                                                    color: Colors.black,
+                                                                  style: TextStyle(
+                                                                    color: textColor,
                                                                     fontSize: 24,
                                                                     fontWeight: FontWeight.bold,
                                                                   ),
@@ -1050,11 +1080,11 @@ class _HomeState extends State<Home> {
                                             )
                                           : selectedTab == 2
                                               ? savedRecipes.isEmpty
-                                                  ? const Center(
+                                                  ? Center(
                                                       child: Text(
                                                         'No saved recipes yet.',
                                                         style: TextStyle(
-                                                          color: Colors.white,
+                                                          color: textColor,
                                                           fontSize: 18,
                                                           fontWeight: FontWeight.bold,
                                                         ),
@@ -1066,12 +1096,12 @@ class _HomeState extends State<Home> {
                                                       itemBuilder: (context, index) {
                                                         final recipe = savedRecipes[index];
                                                         return Card(
-                                                          color: Colors.white,
+                                                          color: cardColor,
                                                           child: ListTile(
                                                             title: Text(
                                                               recipe,
-                                                              style: const TextStyle(
-                                                                color: Colors.black,
+                                                              style: TextStyle(
+                                                                color: textColor,
                                                                 fontWeight: FontWeight.bold,
                                                               ),
                                                             ),
@@ -1095,10 +1125,10 @@ class _HomeState extends State<Home> {
                                                       padding: const EdgeInsets.all(16),
                                                       child: Column(
                                                         children: [
-                                                          const Text(
+                                                          Text(
                                                             'Recipe Timers',
                                                             style: TextStyle(
-                                                              color: Colors.black,
+                                                              color: textColor,
                                                               fontSize: 24,
                                                               fontWeight: FontWeight.bold,
                                                             ),
@@ -1264,10 +1294,10 @@ class _HomeState extends State<Home> {
                                                           child: Column(
                                                             crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
-                                                              const Text(
+                                                              Text(
                                                                 'Settings',
                                                                 style: TextStyle(
-                                                                  color: Colors.white,
+                                                                  color: textColor,
                                                                   fontSize: 24,
                                                                   fontWeight: FontWeight.bold,
                                                                 ),
@@ -1331,13 +1361,13 @@ class _HomeState extends State<Home> {
                                                             ],
                                                           ),
                                                         )
-                                                      : const Stack(
+                                                      : Stack(
                                                           children: [
                                                             Center(
                                                               child: Text(
                                                                 'Help Room',
                                                                 style: TextStyle(
-                                                                  color: Colors.white,
+                                                                  color: textColor,
                                                                   fontSize: 24,
                                                                   fontWeight: FontWeight.bold,
                                                                 ),
