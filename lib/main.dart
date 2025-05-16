@@ -384,28 +384,31 @@ class _HomeState extends State<Home> {
   Widget buildMealTypeFilters() {
     final mealTypes = ['breakfast', 'lunch', 'dinner', 'dessert'];
     
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: mealTypes.map((type) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5),
-          child: FilterChip(
-            label: Text(getTranslatedText(type)),
-            selected: selectedMealType == type,
-            onSelected: (selected) {
-              setState(() {
-                selectedMealType = selected ? type : '';
-              });
-            },
-            backgroundColor: Colors.white,
-            selectedColor: Colors.black,
-            checkmarkColor: Colors.white,
-            labelStyle: TextStyle(
-              color: selectedMealType == type ? Colors.white : Colors.black,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        children: mealTypes.map((type) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 5),
+            child: FilterChip(
+              label: Text(getTranslatedText(type)),
+              selected: selectedMealType == type,
+              onSelected: (selected) {
+                setState(() {
+                  selectedMealType = selected ? type : '';
+                });
+              },
+              backgroundColor: Colors.white,
+              selectedColor: Colors.black,
+              checkmarkColor: Colors.white,
+              labelStyle: TextStyle(
+                color: selectedMealType == type ? Colors.white : Colors.black,
+              ),
             ),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -442,7 +445,9 @@ class _HomeState extends State<Home> {
                 });
               },
               leadingExtendedNavRail:
-                  Text('COOKUP', style: GoogleFonts.cairo(color: textColor,fontSize: 42)),
+                  Text('COOKUP', style: GoogleFonts.sairaStencilOne(color: textColor,fontSize: 42)),
+              leadingUnextendedNavRail: 
+                  Text('COOKUP', style: GoogleFonts.sairaStencilOne(color: textColor,fontSize: 32)),
               destinations: [
                 NavigationDestination(
                   icon: const Icon(Icons.menu_book_outlined),
