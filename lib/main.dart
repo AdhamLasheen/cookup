@@ -441,6 +441,8 @@ class _HomeState extends State<Home> {
                   selectedTab = index;
                 });
               },
+              leadingExtendedNavRail:
+                  Text('COOKUP', style: GoogleFonts.cairo(color: textColor,fontSize: 42)),
               destinations: [
                 NavigationDestination(
                   icon: const Icon(Icons.menu_book_outlined),
