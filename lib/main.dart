@@ -390,6 +390,7 @@ class _HomeState extends State<Home> {
       child: Theme(
         data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
         child: AdaptiveScaffold(
+        internalAnimations: false,
           selectedIndex: selectedTab,
           onSelectedIndexChange: (index) {
             setState(() {
@@ -427,10 +428,7 @@ class _HomeState extends State<Home> {
             ),
           ],
           body: (_) => Center(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: _buildBody(selectedTab),
-            ),
+            child: _buildBody(selectedTab),
           ),
         ),
       ),
