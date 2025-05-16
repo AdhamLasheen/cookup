@@ -108,34 +108,147 @@ class _HomeState extends State<Home> {
 
   void switchToHelp() {
     setState(() {
-      selectedTab = 3;
+      selectedTab = 6; // Changed from 3 to 6 (Help tab)
     });
+  }
+
+  List<String> getFilteredRecipes() {
+    if (selectedIngredients.isEmpty) {
+      return [];
+    }
+
+    return recipeDetails.entries.where((entry) {
+      String ingredients = entry.value['ingredients']?.toLowerCase() ?? '';
+      List<String> recipeIngredientsList = ingredients
+          .split('\n')
+          .map((line) => line.trim().replaceAll(RegExp(r'^-\s*'), ''))
+          .where((line) => line.isNotEmpty)
+          .toList();
+
+      // Calculate how many selected ingredients are found in this recipe
+      Set<String> matchingIngredients = {};
+      for (var ingredient in recipeIngredientsList) {
+        for (var selected in selectedIngredients) {
+          if (ingredient.toLowerCase().contains(selected.toLowerCase())) {
+            matchingIngredients.add(selected);
+          }
+        }
+      }
+
+      // Require at least one matching ingredient
+      return matchingIngredients.isNotEmpty;
+    }).map((entry) => entry.key).toList();
   }
 
   void switchToFilteredRecipes() {
     if (selectedIngredients.isNotEmpty) {
-      setState(() {
-        selectedTab = 5;
-      });
+      final filteredRecipes = getFilteredRecipes();
+      
+      if (filteredRecipes.isEmpty) {
+        // Show message if no recipes found
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('No recipes found with selected ingredients'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (context) => DraggableScrollableSheet(
+          initialChildSize: 0.8,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          builder: (_, controller) => Container(
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[850] : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Found ${filteredRecipes.length} matching recipes:',
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Expanded(
+                  child: ListView.builder(
+                    controller: controller,
+                    itemCount: filteredRecipes.length,
+                    itemBuilder: (context, index) {
+                      final recipe = filteredRecipes[index];
+                      final recipeIngredients = recipeDetails[recipe]?['ingredients'] ?? '';
+                      
+                      // Calculate matching ingredients
+                      final matchingIngredients = selectedIngredients.where((ingredient) =>
+                          recipeIngredients.toLowerCase().contains(ingredient.toLowerCase())).toList();
+                      
+                      return ListTile(
+                        title: Text(
+                          recipe,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Contains: ${matchingIngredients.join(", ")}',
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          switchToRecipeDetails(recipe);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
   }
 
   void switchToRecipeRoulette() {
     setState(() {
-      selectedTab = 6;
+      selectedTab = 3;
       selectedRecipe = '';
     });
   }
 
   void switchToTimers() {
     setState(() {
-      selectedTab = 8;
+      selectedTab = 4; // Changed from 5 to 4 (Timers tab)
     });
   }
 
   void switchToSettings() {
     setState(() {
-      selectedTab = 9;
+      selectedTab = 5; // Changed from 6 to 5 (Settings tab)
     });
   }
 
@@ -260,34 +373,13 @@ class _HomeState extends State<Home> {
     );
   }
 
-  List<String> getFilteredRecipes() {
-    if (selectedIngredients.isEmpty) {
-      return [];
-    }
-
-    return recipeDetails.keys.where((recipe) {
-      String ingredients = recipeDetails[recipe]?['ingredients']?.toLowerCase() ?? '';
-
-      List<String> recipeIngredients = ingredients
-          .split('\n')
-          .map((line) => line.trim().replaceAll(RegExp(r'^-\s*'), ''))
-          .where((line) => line.isNotEmpty)
-          .toList();
-
-      return selectedIngredients.any((selected) {
-        return recipeIngredients.any((ingredient) =>
-            ingredient.toLowerCase().contains(selected.toLowerCase()));
-      });
-    }).toList();
-  }
-
   String selectedRecipe = '';
   int previousTab = 0;
 
   void switchToRecipeDetails(String recipeName) {
     setState(() {
       previousTab = selectedTab;
-      selectedTab = 4;
+      selectedTab = 7; // Changed from 4 to 7 (Recipe details)
       selectedRecipe = recipeName;
     });
   }
@@ -303,47 +395,59 @@ class _HomeState extends State<Home> {
       color: backgroundColor,
       child: Theme(
         data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
-        child: AdaptiveScaffold(
-        internalAnimations: false,
-          selectedIndex: selectedTab,
-          onSelectedIndexChange: (index) {
-            setState(() {
-              selectedTab = index;
-            });
-          },
-          destinations: [
-            NavigationDestination(
-              icon: const Icon(Icons.menu_book_outlined),
-              label: getTranslatedText('recipes'),
+        child: Stack(
+          children: [
+            AdaptiveScaffold(
+              internalAnimations: false,
+              selectedIndex: selectedTab > 6 ? previousTab : selectedTab, // Keep previous tab selected when showing details
+              onSelectedIndexChange: (index) {
+                setState(() {
+                  selectedTab = index;
+                });
+              },
+              destinations: [
+                NavigationDestination(
+                  icon: const Icon(Icons.menu_book_outlined),
+                  label: getTranslatedText('recipes'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.egg),
+                  label: getTranslatedText('ingredients'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.offline_pin),
+                  label: getTranslatedText('saved_recipes'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.casino),
+                  label: getTranslatedText('recipe_roulette'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.timer),
+                  label: getTranslatedText('recipe_timers'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.settings),
+                  label: getTranslatedText('settings'),
+                ),
+                NavigationDestination(
+                  icon: const Icon(Icons.help),
+                  label: getTranslatedText('help'),
+                ),
+              ],
+              body: (_) => Center(
+                child: _buildBody(selectedTab),
+              ),
             ),
-            NavigationDestination(
-              icon: const Icon(Icons.egg),
-              label: getTranslatedText('ingredients'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.offline_pin),
-              label: getTranslatedText('saved_recipes'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.casino),
-              label: getTranslatedText('recipe_roulette'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.timer),
-              label: getTranslatedText('recipe_timers'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.settings),
-              label: getTranslatedText('settings'),
-            ),
-            NavigationDestination(
-              icon: const Icon(Icons.help),
-              label: getTranslatedText('help'),
-            ),
+            if (selectedTab == 7) ...[
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: isDarkMode ? Colors.black : Colors.white,
+              ),
+              _buildRecipeDetailsView(),
+            ],
           ],
-          body: (_) => Center(
-            child: _buildBody(selectedTab),
-          ),
         ),
       ),
     );
@@ -352,7 +456,7 @@ class _HomeState extends State<Home> {
   Widget _buildBody(int index) {
     switch (index) {
       case 0:
-      return _buildRecipesTab();
+        return _buildRecipesTab();
       case 1:
         return _buildIngredientsTab();
       case 2:
@@ -368,6 +472,94 @@ class _HomeState extends State<Home> {
       default:
         return _buildRecipesTab();
     }
+  }
+
+  Widget _buildRecipeDetailsView() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.arrow_back, 
+                color: isDarkMode ? Colors.white : Colors.black
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedTab = previousTab;
+                });
+              },
+            ),
+            Expanded(
+              child: Text(
+                'Recipe Details',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                savedRecipes.contains(selectedRecipe) 
+                    ? Icons.favorite 
+                    : Icons.favorite_border,
+                color: Colors.red,
+              ),
+              onPressed: () {
+                setState(() {
+                  if (savedRecipes.contains(selectedRecipe)) {
+                    savedRecipes.remove(selectedRecipe);
+                  } else {
+                    savedRecipes.add(selectedRecipe);
+                  }
+                });
+              },
+            ),
+          ],
+        ),
+        Expanded(
+          child: Container(
+            margin: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16.0),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.grey[850] : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Recipe: $selectedRecipe',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Ingredients:\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Instructions:\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildRecipesTab() {
