@@ -9,18 +9,37 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isDarkMode = false;
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Flutter Demo', home: const Home());
+    return MaterialApp(
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home:  Home(
+        isDarkMode: isDarkMode,
+        onThemeChanged: (value) {
+          setState(() {
+            isDarkMode = value;
+          });
+        },
+      ),
+    );
   }
 }
 
 class Home extends StatefulWidget {
-  const Home({super.key});
-
+  const Home({super.key, required this.isDarkMode, required this.onThemeChanged});
+  final bool isDarkMode ;
+  final ValueChanged<bool> onThemeChanged;
   @override
   State<Home> createState() => _HomeState();
 }
@@ -34,7 +53,6 @@ class _HomeState extends State<Home> {
   bool isSpinning = false;
   Map<String, Timer> activeTimers = {};
   Map<String, int> timerDurations = {};
-  bool isDarkMode = false;
   String selectedLanguage = 'English';
 
   final Map<String, Map<String, String>> translations = {
@@ -244,7 +262,7 @@ class _HomeState extends State<Home> {
           maxChildSize: 0.95,
           builder: (_, controller) => Container(
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[850] : Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Column(
@@ -255,9 +273,7 @@ class _HomeState extends State<Home> {
                     children: [
                       Text(
                         'Found ${filteredRecipes.length} matching recipes:',
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                          fontSize: 18,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -285,16 +301,13 @@ class _HomeState extends State<Home> {
                       return ListTile(
                         title: Text(
                           recipe,
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         subtitle: Text(
                           '${getTranslatedText('contains')} ${matchingIngredients.join(", ")}',
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         onTap: () {
                           Navigator.pop(context);
@@ -399,12 +412,6 @@ class _HomeState extends State<Home> {
                   selectedMealType = selected ? type : '';
                 });
               },
-              backgroundColor: Colors.white,
-              selectedColor: Colors.black,
-              checkmarkColor: Colors.white,
-              labelStyle: TextStyle(
-                color: selectedMealType == type ? Colors.white : Colors.black,
-              ),
             ),
           );
         }).toList(),
@@ -425,72 +432,60 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isDarkMode ? Colors.black : const Color.fromRGBO(0, 0, 0, 0.122);
-    final cardColor = isDarkMode ? Colors.grey[850] : Colors.white;
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-    final borderColor = isDarkMode ? Colors.grey[600] : Colors.grey[400];
-
-    return Material(
-      color: backgroundColor,
-      child: Theme(
-        data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
-        child: Stack(
-          children: [
-            AdaptiveScaffold(
-              internalAnimations: false,
-              selectedIndex: selectedTab > 6 ? previousTab : selectedTab,
-              onSelectedIndexChange: (index) {
-                setState(() {
-                  selectedTab = index;
-                });
-              },
-              leadingExtendedNavRail:
-                  Text('COOKUP', style: GoogleFonts.sairaStencilOne(color: textColor,fontSize: 42)),
-              leadingUnextendedNavRail: 
-                  Text('COOKUP', style: GoogleFonts.sairaStencilOne(color: textColor,fontSize: 32)),
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.menu_book_outlined),
-                  label: getTranslatedText('recipes'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.egg),
-                  label: getTranslatedText('ingredients'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.offline_pin),
-                  label: getTranslatedText('saved_recipes'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.casino),
-                  label: getTranslatedText('recipe_roulette'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.timer),
-                  label: getTranslatedText('recipe_timers'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.settings),
-                  label: getTranslatedText('settings'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.help),
-                  label: getTranslatedText('help'),
-                ),
-              ],
-              body: (_) => _buildBody(selectedTab),
-            ),
-            if (selectedTab == 7) 
-              Scaffold(
-                backgroundColor: isDarkMode ? Colors.black : Colors.white,
-                body: SafeArea(
-                  child: _buildRecipeDetailsView(),
-                ),
+    return Stack(
+        children: [
+          AdaptiveScaffold(
+            internalAnimations: false,
+            selectedIndex: selectedTab > 6 ? previousTab : selectedTab,
+            onSelectedIndexChange: (index) {
+              setState(() {
+                selectedTab = index;
+              });
+            },
+            leadingExtendedNavRail:
+                Text('COOKUP', style: GoogleFonts.sairaStencilOne(fontSize: 42)),
+            leadingUnextendedNavRail: 
+                Text('COOKUP', style: GoogleFonts.sairaStencilOne(fontSize: 32)),
+            destinations: [
+              NavigationDestination(
+                icon: const Icon(Icons.menu_book_outlined),
+                label: getTranslatedText('recipes'),
               ),
-          ],
-        ),
-      ),
-    );
+              NavigationDestination(
+                icon: const Icon(Icons.egg),
+                label: getTranslatedText('ingredients'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.offline_pin),
+                label: getTranslatedText('saved_recipes'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.casino),
+                label: getTranslatedText('recipe_roulette'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.timer),
+                label: getTranslatedText('recipe_timers'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.settings),
+                label: getTranslatedText('settings'),
+              ),
+              NavigationDestination(
+                icon: const Icon(Icons.help),
+                label: getTranslatedText('help'),
+              ),
+            ],
+            body: (_) => _buildBody(selectedTab),
+          ),
+          if (selectedTab == 7) 
+            Scaffold(
+              body: SafeArea(
+                child: _buildRecipeDetailsView(),
+              ),
+            ),
+        ],
+      );
   }
 
   Widget _buildBody(int index) {
@@ -521,9 +516,7 @@ class _HomeState extends State<Home> {
         Row(
           children: [
             IconButton(
-              icon: Icon(Icons.arrow_back, 
-                color: isDarkMode ? Colors.white : Colors.black
-              ),
+              icon: const Icon(Icons.arrow_back),
               onPressed: () {
                 setState(() {
                   selectedTab = previousTab;
@@ -533,9 +526,7 @@ class _HomeState extends State<Home> {
             Expanded(
               child: Text(
                 getTranslatedText('recipe_details'),
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 20,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -564,7 +555,7 @@ class _HomeState extends State<Home> {
             margin: const EdgeInsets.all(16.0),
             padding: const EdgeInsets.all(16.0),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[850] : Colors.white,
+              color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -572,27 +563,19 @@ class _HomeState extends State<Home> {
               children: [
                 Text(
                   '${getTranslatedText('recipe_prefix')} $selectedRecipe',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 24,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   '${getTranslatedText('ingredients_prefix')}\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 16,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 16),
                 Text(
                   '${getTranslatedText('instructions_prefix')}\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 16,
-                  ),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ],
             ),
@@ -613,14 +596,11 @@ class _HomeState extends State<Home> {
                 searchQuery = value.toLowerCase();
               });
             },
-            style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
             decoration: InputDecoration(
               hintText: getTranslatedText('search_recipes_hint'),
-              hintStyle: TextStyle(color: isDarkMode ? Colors.grey : Colors.grey[600]),
-              prefixIcon: Icon(Icons.search, color: isDarkMode ? Colors.grey : Colors.grey[600]),
+              prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               filled: true,
-              fillColor: isDarkMode ? Colors.grey[850] : Colors.white,
             ),
           ),
         ),
@@ -647,26 +627,18 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildRecipeCard(String recipe) {
-    // Add screen width check
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
     
-    return GestureDetector(
-      onTap: () => switchToRecipeDetails(recipe),
-      child: Container(
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[850] : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
+    return Card(
+      child: InkWell(
+        onTap: () => switchToRecipeDetails(recipe),
         child: Stack(
           children: [
             Positioned.fill(
               child: Center(
                 child: Icon(
                   Icons.menu_book,
-                  // Change color based on screen size
-                  color: isSmallScreen 
-                      ? (isDarkMode ? Colors.grey[700] : Colors.grey[300])
-                      : Colors.black,
+                  color: isSmallScreen ? Theme.of(context).disabledColor : null,
                   size: 50,
                 ),
               ),
@@ -677,9 +649,7 @@ class _HomeState extends State<Home> {
               right: 0,
               child: Text(
                 recipe,
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                  fontSize: 16,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -705,10 +675,8 @@ class _HomeState extends State<Home> {
           ),
           margin: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: isDarkMode ? Colors.grey[850] : Colors.white,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDarkMode ? Colors.grey[600]! : Colors.grey[400]!,
               width: 2,
             ),
           ),
@@ -751,18 +719,14 @@ class _HomeState extends State<Home> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[850] : Colors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isDarkMode ? Colors.grey[600]! : Colors.grey[400]!,
             width: 2,
           ),
         ),
         child: Text(
           ingredient,
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: 14,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -782,23 +746,11 @@ class _HomeState extends State<Home> {
           }
         });
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.black
-              : (isDarkMode ? Colors.grey[850] : Colors.white),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: isDarkMode ? Colors.grey[600]! : Colors.grey[400]!,
-            width: 2,
-          ),
-        ),
+      child: Card(
         child: Center(
           child: Text(
             ingredient,
-            style: TextStyle(
-              color: isSelected ? Colors.white : (isDarkMode ? Colors.white : Colors.black),
-              fontSize: 14,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -813,9 +765,7 @@ class _HomeState extends State<Home> {
       ? Center(
           child: Text(
             getTranslatedText('no_saved_recipes'),
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 18,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -826,12 +776,10 @@ class _HomeState extends State<Home> {
           itemBuilder: (context, index) {
             final recipe = savedRecipes[index];
             return Card(
-              color: isDarkMode ? Colors.grey[850] : Colors.white,
               child: ListTile(
                 title: Text(
                   recipe,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -863,9 +811,7 @@ class _HomeState extends State<Home> {
             child: isSpinning
               ? Text(
                   selectedRecipe,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontSize: 24,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 )
@@ -882,9 +828,7 @@ class _HomeState extends State<Home> {
                         selectedRecipe.isNotEmpty
                             ? selectedRecipe
                             : getTranslatedText('press_spin'),
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                          fontSize: 24,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                         textAlign: TextAlign.center,
@@ -916,9 +860,7 @@ class _HomeState extends State<Home> {
         children: [
           Text(
             getTranslatedText('recipe_timers'),
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 24,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -950,7 +892,6 @@ class _HomeState extends State<Home> {
                                       decoration: InputDecoration(
                                         labelText: getTranslatedText('timer_name'),
                                         errorText: showError ? 'Name required' : null,
-                                        errorStyle: const TextStyle(color: Colors.red),
                                       ),
                                       onChanged: (value) {
                                         name = value;
@@ -1103,9 +1044,7 @@ class _HomeState extends State<Home> {
         children: [
           Text(
             getTranslatedText('settings'),
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 24,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1114,12 +1053,8 @@ class _HomeState extends State<Home> {
             child: ListTile(
               title: const Text('Dark Mode'),
               trailing: Switch(
-                value: isDarkMode,
-                onChanged: (value) {
-                  setState(() {
-                    isDarkMode = value;
-                  });
-                },
+                value: widget.isDarkMode,
+                onChanged: widget.onThemeChanged ,
               ),
             ),
           ),
@@ -1157,9 +1092,7 @@ class _HomeState extends State<Home> {
         children: [
           Text(
             'What Each Room Does',
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 20,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1177,10 +1110,7 @@ class _HomeState extends State<Home> {
             'Set multiple timers for different steps of your cooking process.\n\n'
             'Settings\n'
             'Customize the app to your preferences with dark mode, font size, and language options.',
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 16,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
         ],
       ),
