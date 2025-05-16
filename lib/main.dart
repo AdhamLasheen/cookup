@@ -397,56 +397,62 @@ class _HomeState extends State<Home> {
         data: isDarkMode ? ThemeData.dark() : ThemeData.light(),
         child: Stack(
           children: [
-            AdaptiveScaffold(
-              internalAnimations: false,
-              selectedIndex: selectedTab > 6 ? previousTab : selectedTab, // Keep previous tab selected when showing details
-              onSelectedIndexChange: (index) {
-                setState(() {
-                  selectedTab = index;
-                });
-              },
-              destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.menu_book_outlined),
-                  label: getTranslatedText('recipes'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.egg),
-                  label: getTranslatedText('ingredients'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.offline_pin),
-                  label: getTranslatedText('saved_recipes'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.casino),
-                  label: getTranslatedText('recipe_roulette'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.timer),
-                  label: getTranslatedText('recipe_timers'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.settings),
-                  label: getTranslatedText('settings'),
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.help),
-                  label: getTranslatedText('help'),
-                ),
-              ],
-              body: (_) => Center(
-                child: _buildBody(selectedTab),
+            Scaffold(
+              body: Row(
+                children: [
+                  NavigationRail(
+                    selectedIndex: selectedTab > 6 ? previousTab : selectedTab,
+                    onDestinationSelected: (index) {
+                      setState(() {
+                        selectedTab = index;
+                      });
+                    },
+                    labelType: NavigationRailLabelType.all,
+                    backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                    destinations: [
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.menu_book_outlined),
+                        label: Text(getTranslatedText('recipes')),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.egg),
+                        label: Text(getTranslatedText('ingredients')),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.offline_pin),
+                        label: Text(getTranslatedText('saved_recipes')),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.casino),
+                        label: Text(getTranslatedText('recipe_roulette')),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.timer),
+                        label: Text(getTranslatedText('recipe_timers')),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.settings),
+                        label: Text(getTranslatedText('settings')),
+                      ),
+                      NavigationRailDestination(
+                        icon: const Icon(Icons.help),
+                        label: Text(getTranslatedText('help')),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: _buildBody(selectedTab),
+                  ),
+                ],
               ),
             ),
-            if (selectedTab == 7) ...[
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: isDarkMode ? Colors.black : Colors.white,
+            if (selectedTab == 7) 
+              Scaffold(
+                backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                body: SafeArea(
+                  child: _buildRecipeDetailsView(),
+                ),
               ),
-              _buildRecipeDetailsView(),
-            ],
           ],
         ),
       ),
@@ -889,6 +895,7 @@ class _HomeState extends State<Home> {
                         context: context,
                         builder: (context) {
                           String name = '';
+                          bool showError = false;
                           final ValueNotifier<int> hours = ValueNotifier(0);
                           final ValueNotifier<int> minutes = ValueNotifier(0);
                           
@@ -900,10 +907,19 @@ class _HomeState extends State<Home> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     TextField(
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         labelText: 'Timer Name',
+                                        errorText: showError ? 'Name required' : null,
+                                        errorStyle: const TextStyle(color: Colors.red),
                                       ),
-                                      onChanged: (value) => name = value,
+                                      onChanged: (value) {
+                                        name = value;
+                                        if (showError) {
+                                          setDialogState(() {
+                                            showError = false;
+                                          });
+                                        }
+                                      },
                                     ),
                                     const SizedBox(height: 20),
                                     Row(
@@ -984,7 +1000,13 @@ class _HomeState extends State<Home> {
                                   ),
                                   TextButton(
                                     onPressed: () {
-                                      if (name.isNotEmpty && (hours.value > 0 || minutes.value > 0)) {
+                                      if (name.isEmpty) {
+                                        setDialogState(() {
+                                          showError = true;
+                                        });
+                                        return;
+                                      }
+                                      if (hours.value > 0 || minutes.value > 0) {
                                         startTimer(name, (hours.value * 3600) + (minutes.value * 60));
                                         Navigator.pop(context);
                                       }
