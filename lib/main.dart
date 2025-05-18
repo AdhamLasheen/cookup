@@ -58,6 +58,7 @@ class _HomeState extends State<Home> {
   String selectedLanguage = 'English';
   final Map<String, String> recipeImages = {};
   String? lastRecipe; // Add this line after selectedRecipe declaration
+  bool useMinimumIngredients = false; // Add this near other state variables
 
   final Map<String, Map<String, String>> translations = {
     'English': {
@@ -249,18 +250,33 @@ class _HomeState extends State<Home> {
           .where((line) => line.isNotEmpty)
           .toList();
 
-      // Calculate how many selected ingredients are found in this recipe
-      Set<String> matchingIngredients = {};
-      for (var ingredient in recipeIngredientsList) {
-        for (var selected in selectedIngredients) {
-          if (ingredient.toLowerCase().contains(selected.toLowerCase())) {
-            matchingIngredients.add(selected);
+      if (useMinimumIngredients) {
+        // Old way - show recipes if they contain any of the selected ingredients
+        Set<String> matchingIngredients = {};
+        for (var ingredient in recipeIngredientsList) {
+          for (var selected in selectedIngredients) {
+            if (ingredient.toLowerCase().contains(selected.toLowerCase())) {
+              matchingIngredients.add(selected);
+            }
           }
         }
+        return matchingIngredients.isNotEmpty;
+      } else {
+        // New way - show recipes only if all ingredients are available
+        for (var ingredient in recipeIngredientsList) {
+          bool hasIngredient = false;
+          for (var selected in selectedIngredients) {
+            if (ingredient.toLowerCase().contains(selected.toLowerCase())) {
+              hasIngredient = true;
+              break;
+            }
+          }
+          if (!hasIngredient) {
+            return false;
+          }
+        }
+        return true;
       }
-
-      // Require at least one matching ingredient
-      return matchingIngredients.isNotEmpty;
     }).map((entry) => entry.key).toList();
   }
 
@@ -1171,6 +1187,20 @@ class _HomeState extends State<Home> {
                       selectedLanguage = value;
                     });
                   }
+                },
+              ),
+            ),
+          ),
+          Card(
+            child: ListTile(
+              title: const Text('Minimum Ingredients Mode'),
+              subtitle: const Text('Show recipes containing any selected ingredient'),
+              trailing: Switch(
+                value: useMinimumIngredients,
+                onChanged: (value) {
+                  setState(() {
+                    useMinimumIngredients = value;
+                  });
                 },
               ),
             ),
