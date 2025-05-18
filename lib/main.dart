@@ -1223,20 +1223,28 @@ class _HomeState extends State<Home> {
             ),
           ),
           const SizedBox(height: 10),
-          Text(
-            'Ingredient Room\n'
-            'Select the ingredients you currently have. You can search for items, add them to your list, and remove them anytime.\n\n'
-            'Recipe Room\n'
-            'Get recipe suggestions based on the ingredients you\'ve selected. The more you add, the more personalized the results.\n\n'
-            'Saved Recipe Room\n'
-            'Save your favorite recipes so you can find them easily later.\n\n'
-            'Recipe Roulette\n'
-            'Let the app randomly select a recipe for you when you\'re feeling indecisive.\n\n'
-            'Recipe Timers\n'
-            'Set multiple timers for different steps of your cooking process.\n\n'
-            'Settings\n'
-            'Customize the app to your preferences with dark mode, font size, and language options.',
-            style: Theme.of(context).textTheme.bodyMedium,
+          Expanded(
+            child: SingleChildScrollView(
+              child: Text(
+                'Ingredient Room\n'
+                'Select the ingredients you currently have. By default, it will show recipes where you have all required ingredients. You can change this in settings with "Minimum Ingredients Mode".\n\n'
+                'Recipe Room\n'
+                'Browse all available recipes. Use meal type filters to narrow down your search. Click any recipe to see details.\n\n'
+                'Saved Recipe Room\n'
+                'Save your favorite recipes so you can find them easily later. Click the heart icon in recipe details to save.\n\n'
+                'Recipe Roulette\n'
+                'Let the app randomly select a recipe for you. Use meal type filters to narrow down choices. It won\'t repeat the last selected recipe.\n\n'
+                'Recipe Timers\n'
+                'Set multiple timers for different steps of your cooking process. Name each timer to keep track.\n\n'
+                'Kitchen Tools\n'
+                'Helpful cooking utilities like the cup converter for quick measurement conversions.\n\n'
+                'Settings\n'
+                '• Dark Mode: Switch between light and dark themes\n'
+                '• Language: Choose your preferred language\n'
+                '• Minimum Ingredients Mode: When on, shows recipes containing any selected ingredient. When off, only shows recipes where you have all ingredients.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
           ),
         ],
       ),
