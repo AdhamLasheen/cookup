@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:cookup/services/unsplash_service.dart';
+import 'dart:ui';
 
 void main() {
   runApp(const MyApp());
@@ -54,6 +56,7 @@ class _HomeState extends State<Home> {
   Map<String, Timer> activeTimers = {};
   Map<String, int> timerDurations = {};
   String selectedLanguage = 'English';
+  final Map<String, String> recipeImages = {};
 
   final Map<String, Map<String, String>> translations = {
     'English': {
@@ -195,6 +198,17 @@ class _HomeState extends State<Home> {
       return translations['English']![key]!;
     }
     return translations[selectedLanguage]?[key] ?? translations['English']![key]!;
+  }
+
+  Future<void> _loadRecipeImage(String recipe) async {
+    if (!recipeImages.containsKey(recipe)) {
+      final imageUrl = await UnsplashService.getRecipeImage(recipe);
+      if (imageUrl != null) {
+        setState(() {
+          recipeImages[recipe] = imageUrl;
+        });
+      }
+    }
   }
 
   void switchToRecipes() {
@@ -653,30 +667,63 @@ class _HomeState extends State<Home> {
   Widget _buildRecipeCard(String recipe) {
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
     
+    _loadRecipeImage(recipe);
+    
     return Card(
       child: InkWell(
         onTap: () => switchToRecipeDetails(recipe),
         child: Stack(
           children: [
-            Positioned.fill(
-              child: Center(
-                child: Icon(
-                  Icons.menu_book,
-                  color: isSmallScreen ? Theme.of(context).disabledColor : null,
-                  size: 50,
+            if (recipeImages.containsKey(recipe))
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    children: [
+                      Image.network(
+                        recipeImages[recipe]!,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(child: CircularProgressIndicator());
+                        },
+                      ),
+                      Positioned.fill(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 1.5, sigmaY: 1.5),
+                          child: Container(
+                            color: Colors.black.withOpacity(0.1),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
+            if (!recipeImages.containsKey(recipe))
+              Positioned.fill(
+                child: Center(
+                  child: Icon(
+                    Icons.menu_book,
+                    color: isSmallScreen ? Theme.of(context).disabledColor : null,
+                    size: 50,
+                  ),
+                ),
+              ),
             Positioned(
               top: 8,
               left: 0,
               right: 0,
-              child: Text(
-                recipe,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: Theme.of(context).cardColor.withOpacity(0.8),
+                child: Text(
+                  recipe,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
             ),
           ],
