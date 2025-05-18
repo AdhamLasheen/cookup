@@ -85,6 +85,18 @@ class _HomeState extends State<Home> {
       'lunch': 'Lunch',
       'dinner': 'Dinner',
       'dessert': 'Dessert',
+      'kitchen_tools': 'Kitchen Tools',
+      'cup_converter': 'Cup Converter',
+      'convert_from': 'Convert from',
+      'convert_to': 'Convert to',
+      'amount': 'Amount',
+      'convert': 'Convert',
+      'result': 'Result',
+      'cups': 'Cups',
+      'milliliters': 'Milliliters',
+      'fluid_ounces': 'Fluid Ounces',
+      'tablespoons': 'Tablespoons',
+      'teaspoons': 'Teaspoons',
     },
     'Arabic': {
       'menu': 'القائمة',
@@ -205,7 +217,7 @@ class _HomeState extends State<Home> {
 
   void switchToHelp() {
     setState(() {
-      selectedTab = 6; // Changed from 3 to 6 (Help tab)
+      selectedTab = 7; // Update help tab index
     });
   }
 
@@ -334,13 +346,19 @@ class _HomeState extends State<Home> {
 
   void switchToTimers() {
     setState(() {
-      selectedTab = 4; // Changed from 5 to 4 (Timers tab)
+      selectedTab = 4; // Timers tab
     });
   }
 
   void switchToSettings() {
     setState(() {
-      selectedTab = 5; // Changed from 6 to 5 (Settings tab)
+      selectedTab = 6; // Update settings tab index
+    });
+  }
+
+  void switchToKitchenTools() {
+    setState(() {
+      selectedTab = 5; // Update kitchen tools tab index
     });
   }
 
@@ -425,7 +443,7 @@ class _HomeState extends State<Home> {
   void switchToRecipeDetails(String recipeName) {
     setState(() {
       previousTab = selectedTab;
-      selectedTab = 7; // Changed from 4 to 7 (Recipe details)
+      selectedTab = 8; // Recipe details
       selectedRecipe = recipeName;
     });
   }
@@ -436,7 +454,7 @@ class _HomeState extends State<Home> {
         children: [
           AdaptiveScaffold(
             internalAnimations: false,
-            selectedIndex: selectedTab > 6 ? previousTab : selectedTab,
+            selectedIndex: selectedTab > 7 ? previousTab : selectedTab,
             onSelectedIndexChange: (index) {
               setState(() {
                 selectedTab = index;
@@ -468,6 +486,10 @@ class _HomeState extends State<Home> {
                 label: getTranslatedText('recipe_timers'),
               ),
               NavigationDestination(
+                icon: const Icon(Icons.kitchen),
+                label: getTranslatedText('kitchen_tools'),
+              ),
+              NavigationDestination(
                 icon: const Icon(Icons.settings),
                 label: getTranslatedText('settings'),
               ),
@@ -478,7 +500,7 @@ class _HomeState extends State<Home> {
             ],
             body: (_) => _buildBody(selectedTab),
           ),
-          if (selectedTab == 7) 
+          if (selectedTab == 8) 
             Scaffold(
               body: SafeArea(
                 child: _buildRecipeDetailsView(),
@@ -501,8 +523,10 @@ class _HomeState extends State<Home> {
       case 4:
         return _buildTimersTab();
       case 5:
-        return _buildSettingsTab();
+        return _buildKitchenToolsTab();
       case 6:
+        return _buildSettingsTab();
+      case 7:
         return _buildHelpTab();
       default:
         return _buildRecipesTab();
@@ -1114,6 +1138,150 @@ class _HomeState extends State<Home> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildKitchenToolsTab() {
+    return DefaultTabController(
+      length: 1,
+      child: Column(
+        children: [
+          TabBar(
+            tabs: [
+              Tab(text: getTranslatedText('cup_converter')),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildCupConverter(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCupConverter() {
+    final units = ['cups', 'milliliters', 'fluid_ounces', 'tablespoons', 'teaspoons'];
+    String fromUnit = 'cups';
+    String toUnit = 'milliliters';
+    double amount = 1.0;
+    String result = '';
+
+    final conversions = {
+      'cups': {
+        'milliliters': 236.588,
+        'fluid_ounces': 8,
+        'tablespoons': 16,
+        'teaspoons': 48,
+      },
+      'milliliters': {
+        'cups': 0.00422675,
+        'fluid_ounces': 0.033814,
+        'tablespoons': 0.067628,
+        'teaspoons': 0.202884,
+      },
+      'fluid_ounces': {
+        'cups': 0.125,
+        'milliliters': 29.5735,
+        'tablespoons': 2,
+        'teaspoons': 6,
+      },
+      'tablespoons': {
+        'cups': 0.0625,
+        'milliliters': 14.7868,
+        'fluid_ounces': 0.5,
+        'teaspoons': 3,
+      },
+      'teaspoons': {
+        'cups': 0.0208333,
+        'milliliters': 4.92892,
+        'fluid_ounces': 0.166667,
+        'tablespoons': 0.333333,
+      },
+    };
+
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: fromUnit,
+                        decoration: InputDecoration(
+                          labelText: getTranslatedText('convert_from'),
+                        ),
+                        items: units.map((unit) => DropdownMenuItem(
+                          value: unit,
+                          child: Text(getTranslatedText(unit)),
+                        )).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => fromUnit = value);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        decoration: InputDecoration(
+                          labelText: getTranslatedText('amount'),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          setState(() => amount = double.tryParse(value) ?? 0);
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: toUnit,
+                        decoration: InputDecoration(
+                          labelText: getTranslatedText('convert_to'),
+                        ),
+                        items: units.map((unit) => DropdownMenuItem(
+                          value: unit,
+                          child: Text(getTranslatedText(unit)),
+                        )).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() => toUnit = value);
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (fromUnit == toUnit) {
+                            setState(() => result = amount.toString());
+                          } else {
+                            final conversion = conversions[fromUnit]?[toUnit] ?? 0;
+                            setState(() => result = (amount * conversion).toStringAsFixed(2));
+                          }
+                        },
+                        child: Text(getTranslatedText('convert')),
+                      ),
+                      if (result.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          '${getTranslatedText('result')}: $result ${getTranslatedText(toUnit)}',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
