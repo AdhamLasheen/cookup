@@ -57,6 +57,7 @@ class _HomeState extends State<Home> {
   Map<String, int> timerDurations = {};
   String selectedLanguage = 'English';
   final Map<String, String> recipeImages = {};
+  String? lastRecipe; // Add this line after selectedRecipe declaration
 
   final Map<String, Map<String, String>> translations = {
     'English': {
@@ -382,7 +383,30 @@ class _HomeState extends State<Home> {
     });
 
     final random = math.Random();
-    final recipes = recipeDetails.keys.toList()..shuffle(random);
+    final recipes = recipeDetails.entries
+        .where((entry) => 
+          selectedMealType.isEmpty || 
+          entry.value['mealType']?.toLowerCase() == selectedMealType)
+        .map((entry) => entry.key)
+        .where((recipe) => recipe != lastRecipe) // Filter out last recipe
+        .toList()
+      ..shuffle(random);
+
+    if (recipes.isEmpty) {
+      setState(() {
+        isSpinning = false;
+        selectedRecipe = '';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(recipes.isEmpty 
+            ? 'No recipes found for selected meal type' 
+            : 'Only one recipe available for this type'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
 
     for (int i = 0; i < 20; i++) {
       await Future.delayed(Duration(milliseconds: 100 + (i * 10)), () {
@@ -395,6 +419,7 @@ class _HomeState extends State<Home> {
     await Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         selectedRecipe = recipes[random.nextInt(recipes.length)];
+        lastRecipe = selectedRecipe; // Store the selected recipe
         isSpinning = false;
       });
     });
