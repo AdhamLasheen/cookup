@@ -51,6 +51,7 @@ class _HomeState extends State<Home> {
   String selectedMealType = '';
   final List<String> selectedIngredients = [];
   final List<String> savedRecipes = [];
+
   String searchQuery = '';
   bool isSpinning = false;
   Map<String, Timer> activeTimers = {};
@@ -59,6 +60,7 @@ class _HomeState extends State<Home> {
   final Map<String, String> recipeImages = {};
   String? lastRecipe; // Add this line after selectedRecipe declaration
   bool useMinimumIngredients = false; // Add this near other state variables
+  String ingredientSortMode = 'alphabetical'; // Add this with other state variables
 
   final Map<String, Map<String, String>> translations = {
     'English': {
@@ -243,6 +245,12 @@ class _HomeState extends State<Home> {
     }
 
     return recipeDetails.entries.where((entry) {
+      // Check meal type first
+      if (selectedMealType.isNotEmpty && 
+          entry.value['mealType']?.toLowerCase() != selectedMealType) {
+        return false;
+      }
+
       String ingredients = entry.value['ingredients']?.toLowerCase() ?? '';
       List<String> recipeIngredientsList = ingredients
           .split('\n')
@@ -776,10 +784,22 @@ class _HomeState extends State<Home> {
   Widget _buildIngredientsTab() {
     final allIngredients = [
       'Eggs', 'Potatoes', 'Steak', 'Cheese', 'Butter', 'Oil', 'Salt', 'Pepper',
+      'Milk', 'Garlic', 'Onion', 'Bread', 'Tomatoes', 
+      'Lettuce', 'Cream', 'Chicken', 'Rice', 'Pasta', 'Beef'
     ];
+
+    // Filter ingredients based on meal type
+    List<String> filteredIngredients = selectedMealType.isEmpty
+        ? allIngredients
+        : allIngredients.where((ingredient) {
+            return recipeDetails.entries.any((recipe) =>
+                recipe.value['mealType']?.toLowerCase() == selectedMealType &&
+                recipe.value['ingredients']?.toLowerCase().contains(ingredient.toLowerCase()) == true);
+          }).toList();
 
     return Column(
       children: [
+        buildMealTypeFilters(),
         Container(
           constraints: BoxConstraints(
             minHeight: 100,
@@ -812,7 +832,7 @@ class _HomeState extends State<Home> {
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             padding: const EdgeInsets.all(20),
-            children: allIngredients
+            children: filteredIngredients
                 .map((ingredient) => _buildIngredientCard(ingredient))
                 .toList(),
           ),
@@ -1070,8 +1090,9 @@ class _HomeState extends State<Home> {
                                                   icon: const Icon(Icons.add),
                                                   onPressed: () {
                                                     setDialogState(() {
-                                                      if (minutes.value < 59) minutes.value++;
-                                                      else {
+                                                      if (minutes.value < 59) {
+                                                        minutes.value++;
+                                                      } else {
                                                         minutes.value = 0;
                                                         hours.value++;
                                                       }
@@ -1139,7 +1160,7 @@ class _HomeState extends State<Home> {
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),
@@ -1253,18 +1274,23 @@ class _HomeState extends State<Home> {
 
   Widget _buildKitchenToolsTab() {
     return DefaultTabController(
-      length: 1,
+      length: 3,
       child: Column(
         children: [
           TabBar(
+            isScrollable: true,
             tabs: [
               Tab(text: getTranslatedText('cup_converter')),
+              Tab(text: 'Temperature'),
+              Tab(text: 'Weight'),
             ],
           ),
           Expanded(
             child: TabBarView(
               children: [
                 _buildCupConverter(),
+                _buildTemperatureConverter(),
+                _buildWeightConverter(),
               ],
             ),
           ),
@@ -1384,6 +1410,92 @@ class _HomeState extends State<Home> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                       ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTemperatureConverter() {
+    double celsius = 0;
+    double fahrenheit = 0;
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: const InputDecoration(
+                          labelText: 'Celsius',
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          celsius = double.tryParse(value) ?? 0;
+                          setState(() {
+                            fahrenheit = (celsius * 9/5) + 32;
+                          });
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Fahrenheit: ${fahrenheit.toStringAsFixed(1)}°F',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWeightConverter() {
+    double grams = 0;
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      TextField(
+                        decoration: const InputDecoration(
+                          labelText: 'Grams',
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          grams = double.tryParse(value) ?? 0;
+                          setState(() {});
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        'Ounces: ${(grams / 28.35).toStringAsFixed(2)} oz',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Pounds: ${(grams / 453.6).toStringAsFixed(2)} lb',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
                     ],
                   ),
                 ),

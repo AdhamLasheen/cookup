@@ -82,4 +82,80 @@ Map<String, Map<String, dynamic>> recipeDetails = {
           '4. Fold in chocolate chips.\n'
           '5. Drop spoonfuls onto a baking sheet and bake at 350°F (175°C) for 10-12 minutes.',
     },
+    'Caesar Salad': {
+      'mealType': 'lunch',
+      'ingredients': '''
+- Lettuce
+- Garlic
+- Bread
+- Oil
+- Salt
+- Pepper
+- Chicken
+- Tomatoes''',
+      'instructions': '''
+1. Wash and chop the lettuce
+2. Cut bread into cubes and toast with oil and garlic for croutons
+3. Grill chicken and slice
+4. Mix lettuce with salt, pepper, and dressing
+5. Add croutons, chicken, and tomatoes
+6. Serve immediately''',
+    },
+
+    'Garden Salad': {
+      'mealType': 'lunch',
+      'ingredients': '''
+- Lettuce
+- Tomatoes
+- Onion
+- Salt
+- Pepper
+- Oil''',
+      'instructions': '''
+1. Wash and chop all vegetables
+2. Combine in a large bowl
+3. Season with salt and pepper
+4. Drizzle with oil
+5. Toss well and serve''',
+    },
+
+    'Garlic Beef Rice': {
+      'mealType': 'dinner',
+      'ingredients': '''
+- Rice
+- Beef
+- Garlic
+- Onion
+- Oil
+- Salt
+- Pepper''',
+      'instructions': '''
+1. Cook rice according to package instructions
+2. Mince garlic and dice onions
+3. Heat oil in a large pan
+4. Cook beef with garlic and onions until browned
+5. Season with salt and pepper
+6. Mix with cooked rice and serve hot''',
+    },
+
+    'Creamy Tomato Pasta': {
+      'mealType': 'dinner',
+      'ingredients': '''
+- Pasta
+- Tomatoes
+- Garlic
+- Cream
+- Oil
+- Salt
+- Pepper
+- Cheese''',
+      'instructions': '''
+1. Cook pasta until al dente
+2. Heat oil and sauté minced garlic
+3. Add chopped tomatoes and cook until soft
+4. Stir in cream and simmer
+5. Season with salt and pepper
+6. Add cheese and stir until melted
+7. Mix with pasta and serve''',
+    },
   };
