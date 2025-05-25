@@ -2,6 +2,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Eggs': {
       'ingredients': '- 2 Eggs\n- Salt\n- Pepper\n- Butter',
       'mealType': 'breakfast',
+      'cuisine': 'International',
+      'difficulty': 'Easy',
+      'cookingTime': '10 minutes',
+      'calories': '150 per serving',
+      'servings': '1',
       'instructions': '1. Heat a pan over medium heat.\n'
           '2. Add butter to the pan.\n'
           '3. Crack the eggs into the pan.\n'
@@ -11,6 +16,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Mashed Potatoes': {
       'ingredients': '- 4 Potatoes\n- Butter\n- Milk\n- Salt\n- Pepper',
       'mealType': 'dinner',
+      'cuisine': 'American',
+      'difficulty': 'Easy',
+      'cookingTime': '30 minutes',
+      'calories': '210 per serving',
+      'servings': '4',
       'instructions': '1. Peel and boil the potatoes until soft.\n'
           '2. Mash the potatoes.\n'
           '3. Add butter, milk, salt, and pepper.\n'
@@ -19,6 +29,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Steak': {
       'ingredients': '- 1 Steak\n- Salt\n- Pepper\n- Olive Oil',
       'mealType': 'dinner',
+      'cuisine': 'American',
+      'difficulty': 'Medium',
+      'cookingTime': '15 minutes',
+      'calories': '350 per serving',
+      'servings': '1',
       'instructions': '1. Season the steak with salt and pepper.\n'
           '2. Heat olive oil in a pan over high heat.\n'
           '3. Cook the steak to your desired doneness.\n'
@@ -27,6 +42,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Grilled Cheese': {
       'ingredients': '- 2 Slices of Bread\n- Butter\n- 2 Slices of Cheese',
       'mealType': 'lunch',
+      'cuisine': 'International',
+      'difficulty': 'Easy',
+      'cookingTime': '10 minutes',
+      'calories': '300 per serving',
+      'servings': '1',
       'instructions': '1. Butter one side of each slice of bread.\n'
           '2. Place cheese between the unbuttered sides.\n'
           '3. Grill in a pan until golden brown on both sides.',
@@ -34,6 +54,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Boiled Eggs': {
       'ingredients': '- 2 Eggs\n- Water\n- Salt',
       'mealType': 'breakfast',
+      'cuisine': 'International',
+      'difficulty': 'Easy',
+      'cookingTime': '10 minutes',
+      'calories': '140 per serving',
+      'servings': '1',
       'instructions': '1. Place eggs in a pot and cover with water.\n'
           '2. Bring to a boil and cook for 6-10 minutes.\n'
           '3. Cool in ice water before peeling.',
@@ -41,6 +66,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Chicken': {
       'ingredients': '- 1 Chicken Breast\n- Salt\n- Pepper\n- Olive Oil',
       'mealType': 'dinner',
+      'cuisine': 'International',
+      'difficulty': 'Medium',
+      'cookingTime': '25 minutes',
+      'calories': '250 per serving',
+      'servings': '1',
       'instructions': '1. Season the chicken with salt and pepper.\n'
           '2. Heat olive oil in a pan over medium heat.\n'
           '3. Cook the chicken until fully cooked.\n'
@@ -49,6 +79,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Pancakes': {
       'ingredients': '- 1 Cup Flour\n- 1 Cup Milk\n- 1 Egg\n- 2 Tbsp Sugar\n- 1 Tsp Baking Powder\n- Butter',
       'mealType': 'breakfast',
+      'cuisine': 'American',
+      'difficulty': 'Easy',
+      'cookingTime': '20 minutes',
+      'calories': '200 per serving',
+      'servings': '4',
       'instructions': '1. Mix flour, sugar, and baking powder in a bowl.\n'
           '2. Add milk and egg, and whisk until smooth.\n'
           '3. Heat a pan and add butter.\n'
@@ -58,6 +93,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Brownies': {
       'ingredients': '- 1/2 Cup Butter\n- 1 Cup Sugar\n- 2 Eggs\n- 1/3 Cup Cocoa Powder\n- 1/2 Cup Flour\n- 1 Tsp Vanilla Extract',
       'mealType': 'dessert',
+      'cuisine': 'American',
+      'difficulty': 'Medium',
+      'cookingTime': '30 minutes',
+      'calories': '400 per serving',
+      'servings': '8',
       'instructions': '1. Melt butter and mix with sugar.\n'
           '2. Add eggs and vanilla extract, and whisk.\n'
           '3. Stir in cocoa powder and flour.\n'
@@ -67,6 +107,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Apple Pie': {
       'ingredients': '- 2 Apples\n- 1/2 Cup Sugar\n- 1 Tsp Cinnamon\n- 1 Pie Crust\n- Butter',
       'mealType': 'dessert',
+      'cuisine': 'American',
+      'difficulty': 'Medium',
+      'cookingTime': '1 hour',
+      'calories': '300 per serving',
+      'servings': '6',
       'instructions': '1. Slice apples and mix with sugar and cinnamon.\n'
           '2. Place the mixture in a pie crust.\n'
           '3. Dot with butter and cover with another crust.\n'
@@ -76,6 +121,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     'Chocolate Chip Cookies': {
       'ingredients': '- 1/2 Cup Butter\n- 1/2 Cup Sugar\n- 1/2 Cup Brown Sugar\n- 1 Egg\n- 1 Tsp Vanilla Extract\n- 1 1/4 Cups Flour\n- 1/2 Tsp Baking Soda\n- 1 Cup Chocolate Chips',
       'mealType': 'dessert',
+      'cuisine': 'American',
+      'difficulty': 'Easy',
+      'cookingTime': '15 minutes',
+      'calories': '150 per cookie',
+      'servings': '24',
       'instructions': '1. Cream butter, sugar, and brown sugar together.\n'
           '2. Add egg and vanilla extract, and mix well.\n'
           '3. Stir in flour and baking soda.\n'
@@ -84,6 +134,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
     },
     'Caesar Salad': {
       'mealType': 'lunch',
+      'cuisine': 'Italian',
+      'difficulty': 'Easy',
+      'cookingTime': '15 minutes',
+      'calories': '180 per serving',
+      'servings': '2',
       'ingredients': '''
 - Lettuce
 - Garlic
@@ -104,6 +159,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
 
     'Garden Salad': {
       'mealType': 'lunch',
+      'cuisine': 'International',
+      'difficulty': 'Easy',
+      'cookingTime': '10 minutes',
+      'calories': '120 per serving',
+      'servings': '2',
       'ingredients': '''
 - Lettuce
 - Tomatoes
@@ -121,6 +181,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
 
     'Garlic Beef Rice': {
       'mealType': 'dinner',
+      'cuisine': 'Asian',
+      'difficulty': 'Medium',
+      'cookingTime': '40 minutes',
+      'calories': '350 per serving',
+      'servings': '4',
       'ingredients': '''
 - Rice
 - Beef
@@ -140,6 +205,11 @@ Map<String, Map<String, dynamic>> recipeDetails = {
 
     'Creamy Tomato Pasta': {
       'mealType': 'dinner',
+      'cuisine': 'Italian',
+      'difficulty': 'Easy',
+      'cookingTime': '25 minutes',
+      'calories': '400 per serving',
+      'servings': '4',
       'ingredients': '''
 - Pasta
 - Tomatoes
@@ -157,5 +227,31 @@ Map<String, Map<String, dynamic>> recipeDetails = {
 5. Season with salt and pepper
 6. Add cheese and stir until melted
 7. Mix with pasta and serve''',
+    },
+
+    'Classic Beef Burger': {
+      'mealType': 'dinner',
+      'cuisine': 'American',
+      'difficulty': 'Easy',
+      'cookingTime': '20 minutes',
+      'calories': '450 per serving',
+      'servings': '1',
+      'ingredients': '''
+- Ground Beef
+- Bread Buns
+- Onion
+- Lettuce
+- Tomatoes
+- Salt
+- Pepper
+- Oil''',
+      'instructions': '''
+1. Form the ground beef into patties
+2. Season with salt and pepper
+3. Heat oil in a pan
+4. Cook patties 4-5 minutes each side
+5. Toast the buns lightly
+6. Assemble burger with lettuce, tomato, and onion
+7. Serve hot''',
     },
   };

@@ -104,6 +104,14 @@ class _HomeState extends State<Home> {
       'fluid_ounces': 'Fluid Ounces',
       'tablespoons': 'Tablespoons',
       'teaspoons': 'Teaspoons',
+      'cuisine': 'Cuisine',
+      'difficulty': 'Difficulty',
+      'cooking_time': 'Cooking Time',
+      'calories': 'Calories',
+      'servings': 'Servings',
+      'easy': 'Easy',
+      'medium': 'Medium',
+      'hard': 'Hard',
     },
     'Arabic': {
       'menu': 'القائمة',
@@ -134,6 +142,14 @@ class _HomeState extends State<Home> {
       'lunch': 'غداء',
       'dinner': 'عشاء',
       'dessert': 'حلويات',
+      'cuisine': 'المطبخ',
+      'difficulty': 'الصعوبة',
+      'cooking_time': 'وقت الطهي',
+      'calories': 'السعرات الحرارية',
+      'servings': 'عدد الحصص',
+      'easy': 'سهل',
+      'medium': 'متوسط',
+      'hard': 'صعب',
     },
     'French': {
       'menu': 'Menu',
@@ -164,6 +180,26 @@ class _HomeState extends State<Home> {
       'lunch': 'Déjeuner',
       'dinner': 'Dîner',
       'dessert': 'Dessert',
+      'cuisine': 'Cuisine',
+      'difficulty': 'Difficulté',
+      'cooking_time': 'Temps de Cuisson',
+      'calories': 'Calories',
+      'servings': 'Portions',
+      'easy': 'Facile',
+      'medium': 'Moyen',
+      'hard': 'Difficile',
+      'kitchen_tools': 'Outils de Cuisine',
+      'cup_converter': 'Convertisseur de Tasses',
+      'convert_from': 'Convertir de',
+      'convert_to': 'Convertir en',
+      'amount': 'Quantité',
+      'convert': 'Convertir',
+      'result': 'Résultat',
+      'cups': 'Tasses',
+      'milliliters': 'Millilitres',
+      'fluid_ounces': 'Onces Liquides',
+      'tablespoons': 'Cuillères à Soupe',
+      'teaspoons': 'Cuillères à Café',
     },
     'Spanish': {
       'menu': 'Menú',
@@ -194,6 +230,26 @@ class _HomeState extends State<Home> {
       'lunch': 'Almuerzo',
       'dinner': 'Cena',
       'dessert': 'Postre',
+      'cuisine': 'Cocina',
+      'difficulty': 'Dificultad',
+      'cooking_time': 'Tiempo de Cocción',
+      'calories': 'Calorías',
+      'servings': 'Porciones',
+      'easy': 'Fácil',
+      'medium': 'Medio',
+      'hard': 'Difícil',
+      'kitchen_tools': 'Herramientas de Cocina',
+      'cup_converter': 'Convertidor de Tazas',
+      'convert_from': 'Convertir de',
+      'convert_to': 'Convertir a',
+      'amount': 'Cantidad',
+      'convert': 'Convertir',
+      'result': 'Resultado',
+      'cups': 'Tazas',
+      'milliliters': 'Mililitros',
+      'fluid_ounces': 'Onzas Líquidas',
+      'tablespoons': 'Cucharadas',
+      'teaspoons': 'Cucharaditas',
     }
   };
 
@@ -206,7 +262,11 @@ class _HomeState extends State<Home> {
 
   Future<void> _loadRecipeImage(String recipe) async {
     if (!recipeImages.containsKey(recipe)) {
-      final imageUrl = await UnsplashService.getRecipeImage(recipe);
+      String searchTerm = recipe;
+      if (recipe == 'Classic Beef Burger') {
+        searchTerm = 'burger';
+      }
+      final imageUrl = await UnsplashService.getRecipeImage(searchTerm);
       if (imageUrl != null) {
         setState(() {
           recipeImages[recipe] = imageUrl;
@@ -645,27 +705,93 @@ class _HomeState extends State<Home> {
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Column(
+            child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${getTranslatedText('recipe_prefix')} $selectedRecipe',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                // Left side - Recipe details
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${getTranslatedText('recipe_prefix')} $selectedRecipe',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '${getTranslatedText('ingredients_prefix')}\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '${getTranslatedText('instructions_prefix')}\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(
-                  '${getTranslatedText('ingredients_prefix')}\n${recipeDetails[selectedRecipe]?['ingredients'] ?? ''}',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '${getTranslatedText('instructions_prefix')}\n${recipeDetails[selectedRecipe]?['instructions'] ?? ''}',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                // Right side - Recipe info
+                Expanded(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildInfoRow(Icons.restaurant_menu, 'cuisine', 
+                            recipeDetails[selectedRecipe]?['cuisine'] ?? ''),
+                          const SizedBox(height: 12),
+                          _buildInfoRow(Icons.accessibility, 'difficulty', 
+                            recipeDetails[selectedRecipe]?['difficulty'] ?? ''),
+                          const SizedBox(height: 12),
+                          _buildInfoRow(Icons.timer, 'cooking_time', 
+                            recipeDetails[selectedRecipe]?['cookingTime'] ?? ''),
+                          const SizedBox(height: 12),
+                          _buildInfoRow(Icons.local_fire_department, 'calories', 
+                            recipeDetails[selectedRecipe]?['calories'] ?? ''),
+                          const SizedBox(height: 12),
+                          _buildInfoRow(Icons.people, 'servings', 
+                            recipeDetails[selectedRecipe]?['servings'] ?? ''),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                getTranslatedText(label.toLowerCase()),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                value.toLowerCase().startsWith('easy') || 
+                value.toLowerCase().startsWith('medium') || 
+                value.toLowerCase().startsWith('hard') 
+                    ? getTranslatedText(value.toLowerCase())
+                    : value,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
           ),
         ),
       ],
