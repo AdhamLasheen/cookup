@@ -573,64 +573,172 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 800;
+    final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+    
     return Stack(
-        children: [
-          AdaptiveScaffold(
-            internalAnimations: false,
-            selectedIndex: selectedTab > 7 ? previousTab : selectedTab,
-            onSelectedIndexChange: (index) {
-              setState(() {
-                selectedTab = index;
-              });
-            },
-            leadingExtendedNavRail:
-                Text('COOKUP', style: GoogleFonts.sairaStencilOne(fontSize: 42)),
-            leadingUnextendedNavRail: 
-                Text('COOKUP', style: GoogleFonts.sairaStencilOne(fontSize: 32)),
-            destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.menu_book_outlined),
-                label: getTranslatedText('recipes'),
+      children: [
+        Builder(
+          builder: (context) => Scaffold(
+            key: scaffoldKey,
+            appBar: !isWide ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.menu),
+                onPressed: () => scaffoldKey.currentState?.openDrawer(),
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.egg),
-                label: getTranslatedText('ingredients'),
+              title: Text('COOKUP', 
+                style: GoogleFonts.sairaStencilOne(fontSize: 24)
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.offline_pin),
-                label: getTranslatedText('saved_recipes'),
+            ) : null,
+            drawer: !isWide ? Drawer(
+              child: Column(
+                children: [
+                  Container(
+                    height: 80, // Reduce header height
+                    padding: EdgeInsets.all(16),
+                    child: Text('COOKUP', 
+                      style: GoogleFonts.sairaStencilOne(fontSize: 32)
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.menu_book_outlined),
+                          title: Text(getTranslatedText('recipes')),
+                          selected: selectedTab == 0,
+                          onTap: () {
+                            setState(() => selectedTab = 0);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.egg),
+                          title: Text(getTranslatedText('ingredients')),
+                          selected: selectedTab == 1,
+                          onTap: () {
+                            setState(() => selectedTab = 1);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.offline_pin),
+                          title: Text(getTranslatedText('saved_recipes')),
+                          selected: selectedTab == 2,
+                          onTap: () {
+                            setState(() => selectedTab = 2);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.casino),
+                          title: Text(getTranslatedText('recipe_roulette')),
+                          selected: selectedTab == 3,
+                          onTap: () {
+                            setState(() => selectedTab = 3);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.timer),
+                          title: Text(getTranslatedText('recipe_timers')),
+                          selected: selectedTab == 4,
+                          onTap: () {
+                            setState(() => selectedTab = 4);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.kitchen),
+                          title: Text(getTranslatedText('kitchen_tools')),
+                          selected: selectedTab == 5,
+                          onTap: () {
+                            setState(() => selectedTab = 5);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.settings),
+                          title: Text(getTranslatedText('settings')),
+                          selected: selectedTab == 6,
+                          onTap: () {
+                            setState(() => selectedTab = 6);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.help),
+                          title: Text(getTranslatedText('help')),
+                          selected: selectedTab == 7,
+                          onTap: () {
+                            setState(() => selectedTab = 7);
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              NavigationDestination(
-                icon: const Icon(Icons.casino),
-                label: getTranslatedText('recipe_roulette'),
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.timer),
-                label: getTranslatedText('recipe_timers'),
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.kitchen),
-                label: getTranslatedText('kitchen_tools'),
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.settings),
-                label: getTranslatedText('settings'),
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.help),
-                label: getTranslatedText('help'),
-              ),
-            ],
-            body: (_) => _buildBody(selectedTab),
-          ),
-          if (selectedTab == 8) 
-            Scaffold(
-              body: SafeArea(
-                child: _buildRecipeDetailsView(),
-              ),
+            ) : null,
+            body: Row(
+              children: [
+                if (isWide) NavigationRail(
+                  extended: true,
+                  leading: Text('COOKUP', 
+                    style: GoogleFonts.sairaStencilOne(fontSize: 42)
+                  ),
+                  selectedIndex: selectedTab > 7 ? previousTab : selectedTab,
+                  onDestinationSelected: (index) {
+                    setState(() => selectedTab = index);
+                  },
+                  destinations: [
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.menu_book_outlined),
+                      label: Text(getTranslatedText('recipes')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.egg),
+                      label: Text(getTranslatedText('ingredients')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.offline_pin),
+                      label: Text(getTranslatedText('saved_recipes')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.casino),
+                      label: Text(getTranslatedText('recipe_roulette')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.timer),
+                      label: Text(getTranslatedText('recipe_timers')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.kitchen),
+                      label: Text(getTranslatedText('settings')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.help),
+                      label: Text(getTranslatedText('help')),
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: _buildBody(selectedTab),
+                ),
+              ],
             ),
-        ],
-      );
+          ),
+        ),
+        if (selectedTab == 8) 
+          Scaffold(
+            body: SafeArea(
+              child: _buildRecipeDetailsView(),
+            ),
+          ),
+      ],
+    );
   }
 
   Widget _buildBody(int index) {
