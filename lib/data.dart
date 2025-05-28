@@ -1,6 +1,6 @@
 Map<String, Map<String, dynamic>> recipeDetails = {
     'Eggs': {
-      'ingredients': '- 2 Eggs\n- Salt\n- Pepper\n- Butter',
+      'ingredients': '- 2 Eggs\n- Salt\n- Butter OR Olive Oil\n- Pepper (optional)',
       'mealType': 'breakfast',
       'cuisine': 'International',
       'difficulty': 'Easy',
@@ -14,7 +14,7 @@ Map<String, Map<String, dynamic>> recipeDetails = {
           '5. Cook until desired doneness.',
     },
     'Mashed Potatoes': {
-      'ingredients': '- 4 Potatoes\n- Butter\n- Milk\n- Salt\n- Pepper',
+      'ingredients': '- 4 Potatoes\n- Butter OR Olive Oil\n- Milk OR Cream\n- Salt\n- Pepper (optional)\n- Cheese (optional)',
       'mealType': 'dinner',
       'cuisine': 'American',
       'difficulty': 'Easy',
@@ -27,7 +27,7 @@ Map<String, Map<String, dynamic>> recipeDetails = {
           '4. Mix until smooth.',
     },
     'Steak': {
-      'ingredients': '- 1 Steak\n- Salt\n- Pepper\n- Olive Oil',
+      'ingredients': '- 1 Steak\n- Salt\n- Pepper (optional)\n- Olive Oil\n- Garlic (optional)',
       'mealType': 'dinner',
       'cuisine': 'American',
       'difficulty': 'Medium',
@@ -40,7 +40,7 @@ Map<String, Map<String, dynamic>> recipeDetails = {
           '4. Let it rest before serving.',
     },
     'Grilled Cheese': {
-      'ingredients': '- 2 Slices of Bread\n- Butter\n- 2 Slices of Cheese',
+      'ingredients': '- 2 Slices of Bread\n- Butter\n- 2 Slices of Cheese\n- Garlic Powder (optional)',
       'mealType': 'lunch',
       'cuisine': 'International',
       'difficulty': 'Easy',
@@ -253,5 +253,26 @@ Map<String, Map<String, dynamic>> recipeDetails = {
 5. Toast the buns lightly
 6. Assemble burger with lettuce, tomato, and onion
 7. Serve hot''',
+    },
+    'Spicy Chicken Drums': {
+      'ingredients': '- 8 chicken drumsticks\n- 2 tablespoons olive oil\n- 3 cloves garlic, minced\n- 1 teaspoon paprika\n- 1 teaspoon black pepper (optional)\n- 1 teaspoon salt\n- 1/2 teaspoon chili powder (optional)',
+      'instructions': '1. Preheat oven to 400°F (200°C)\n2. Mix olive oil, garlic, and all spices in a bowl\n3. Coat chicken drums evenly with the spice mixture\n4. Place on a baking sheet\n5. Bake for 35-40 minutes, turning halfway\n6. Check internal temperature reaches 165°F (74°C)',
+      'cuisine': 'American',
+      'difficulty': 'easy',
+      'cookingTime': '45 minutes',
+      'calories': '280 per serving',
+      'servings': '4',
+      'mealType': 'dinner'
+    },
+
+    'Honey Garlic Drums': {
+      'ingredients': '- 8 chicken drumsticks\n- 4 tablespoons honey\n- 4 cloves garlic, minced\n- 2 tablespoons soy sauce\n- 1 tablespoon olive oil\n- 1 teaspoon black pepper (optional)\n- 1 teaspoon salt',
+      'instructions': '1. Mix honey, garlic, soy sauce, and seasonings\n2. Coat chicken drums in the mixture\n3. Heat oil in large pan over medium heat\n4. Cook drums for 20-25 minutes, turning occasionally\n5. Brush with remaining sauce while cooking\n6. Ensure internal temperature reaches 165°F (74°C)',
+      'cuisine': 'Asian Fusion',
+      'difficulty': 'easy',
+      'cookingTime': '30 minutes',
+      'calories': '310 per serving',
+      'servings': '4',
+      'mealType': 'dinner'
     },
   };

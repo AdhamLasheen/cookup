@@ -1,7 +1,6 @@
 import 'package:cookup/data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:cookup/services/unsplash_service.dart';
@@ -312,29 +311,35 @@ class _HomeState extends State<Home> {
       }
 
       String ingredients = entry.value['ingredients']?.toLowerCase() ?? '';
-      List<String> recipeIngredientsList = ingredients
+      List<String> requiredIngredients = ingredients
           .split('\n')
           .map((line) => line.trim().replaceAll(RegExp(r'^-\s*'), ''))
-          .where((line) => line.isNotEmpty)
+          .where((line) => line.isNotEmpty && !line.contains('(optional)'))
           .toList();
 
       if (useMinimumIngredients) {
-        // Old way - show recipes if they contain any of the selected ingredients
+        // Show recipes if they contain any of the selected ingredients
         Set<String> matchingIngredients = {};
-        for (var ingredient in recipeIngredientsList) {
+        for (var ingredient in requiredIngredients) {
+          // Handle OR conditions
+          List<String> alternatives = ingredient.split(' OR ');
           for (var selected in selectedIngredients) {
-            if (ingredient.toLowerCase().contains(selected.toLowerCase())) {
+            if (alternatives.any((alt) => 
+                alt.toLowerCase().contains(selected.toLowerCase()))) {
               matchingIngredients.add(selected);
             }
           }
         }
         return matchingIngredients.isNotEmpty;
       } else {
-        // New way - show recipes only if all ingredients are available
-        for (var ingredient in recipeIngredientsList) {
+        // Show recipes if all required ingredients are available
+        for (var ingredient in requiredIngredients) {
+          // Handle OR conditions
+          List<String> alternatives = ingredient.split(' OR ');
           bool hasIngredient = false;
           for (var selected in selectedIngredients) {
-            if (ingredient.toLowerCase().contains(selected.toLowerCase())) {
+            if (alternatives.any((alt) => 
+                alt.toLowerCase().contains(selected.toLowerCase()))) {
               hasIngredient = true;
               break;
             }
@@ -1017,9 +1022,18 @@ class _HomeState extends State<Home> {
 
   Widget _buildIngredientsTab() {
     final allIngredients = [
-      'Eggs', 'Potatoes', 'Steak', 'Cheese', 'Butter', 'Oil', 'Salt', 'Pepper',
-      'Milk', 'Garlic', 'Onion', 'Bread', 'Tomatoes', 
-      'Lettuce', 'Cream', 'Chicken', 'Rice', 'Pasta', 'Beef'
+      // Basic ingredients
+      'Eggs', 'Milk', 'Butter', 'Salt', 'Pepper', 'Sugar',
+      // Baking ingredients 
+      'Flour', 'Baking Soda', 'Vanilla Extract', 'Chocolate', 'Cocoa Powder',
+      // Oils and fats
+      'Olive Oil', 'Oil',
+      // Proteins
+      'Ground Beef', 'Steak', 'Chicken Breast', 'Chicken Drums',
+      // Produce
+      'Potatoes', 'Garlic', 'Onion', 'Tomatoes', 'Lettuce',
+      // Dairy and others
+      'Cheese', 'Cream', 'Rice', 'Pasta', 'Bread'
     ];
 
     // Filter ingredients based on meal type
