@@ -45,7 +45,7 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   int selectedTab = 0;
   String selectedMealType = '';
   final List<String> selectedIngredients = [];
@@ -60,6 +60,16 @@ class _HomeState extends State<Home> {
   String? lastRecipe; // Add this line after selectedRecipe declaration
   bool useMinimumIngredients = false; // Add this near other state variables
   String ingredientSortMode = 'alphabetical'; // Add this with other state variables
+
+  // New state variables for filters
+  String selectedDifficulty = '';
+  String selectedCuisine = '';
+  String selectedCalorieRange = '';
+  String selectedTimeRange = '';
+  int calorieLimit = 2000; // Add this with other state variables
+
+  late TabController _ingredientsTabController;
+  late TextEditingController _calorieLimitController;
 
   final Map<String, Map<String, String>> translations = {
     'English': {
@@ -304,12 +314,44 @@ class _HomeState extends State<Home> {
     }
 
     return recipeDetails.entries.where((entry) {
-      // Check meal type first
+      // Check all filters first
       if (selectedMealType.isNotEmpty && 
           entry.value['mealType']?.toLowerCase() != selectedMealType) {
         return false;
       }
 
+      // Check difficulty filter
+      if (selectedDifficulty.isNotEmpty && 
+          entry.value['difficulty'] != selectedDifficulty) {
+        return false;
+      }
+
+      // Check cuisine filter
+      if (selectedCuisine.isNotEmpty && 
+          entry.value['cuisine'] != selectedCuisine) {
+        return false;
+      }
+
+      // Check calorie range
+      final calories = int.tryParse(entry.value['calories']?.split(' ')[0] ?? '0') ?? 0;
+      if (selectedCalorieRange.isNotEmpty) {
+        switch (selectedCalorieRange) {
+          case 'under-300':
+            if (calories >= 300) return false;
+            break;
+          case '300-600':
+            if (calories < 300 || calories > 600) return false;
+            break;
+          case '600-900':
+            if (calories < 600 || calories > 900) return false;
+            break;
+          case 'above-900':
+            if (calories <= 900) return false;
+            break;
+        }
+      }
+
+      // Now check ingredients
       String ingredients = entry.value['ingredients']?.toLowerCase() ?? '';
       List<String> requiredIngredients = ingredients
           .split('\n')
@@ -318,11 +360,9 @@ class _HomeState extends State<Home> {
           .toList();
 
       if (useMinimumIngredients) {
-        // Show recipes if they contain any of the selected ingredients
         Set<String> matchingIngredients = {};
         for (var ingredient in requiredIngredients) {
-          // Handle OR conditions
-          List<String> alternatives = ingredient.split(' OR ');
+          List<String> alternatives = ingredient.split(RegExp(r'\s+OR\s+'));
           for (var selected in selectedIngredients) {
             if (alternatives.any((alt) => 
                 alt.toLowerCase().contains(selected.toLowerCase()))) {
@@ -332,10 +372,8 @@ class _HomeState extends State<Home> {
         }
         return matchingIngredients.isNotEmpty;
       } else {
-        // Show recipes if all required ingredients are available
         for (var ingredient in requiredIngredients) {
-          // Handle OR conditions
-          List<String> alternatives = ingredient.split(' OR ');
+          List<String> alternatives = ingredient.split(RegExp(r'\s+OR\s+'));
           bool hasIngredient = false;
           for (var selected in selectedIngredients) {
             if (alternatives.any((alt) => 
@@ -456,13 +494,13 @@ class _HomeState extends State<Home> {
 
   void switchToSettings() {
     setState(() {
-      selectedTab = 6; // Update settings tab index
+      selectedTab = 6;
     });
   }
-
+  
   void switchToKitchenTools() {
     setState(() {
-      selectedTab = 5; // Update kitchen tools tab index
+      selectedTab = 5; 
     });
   }
 
@@ -533,7 +571,16 @@ class _HomeState extends State<Home> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _ingredientsTabController = TabController(length: 2, vsync: this);
+    _calorieLimitController = TextEditingController(text: calorieLimit.toString());
+  }
+
+  @override
   void dispose() {
+    _ingredientsTabController.dispose();
+    _calorieLimitController.dispose();
     for (final timer in activeTimers.values) {
       timer.cancel();
     }
@@ -608,6 +655,7 @@ class _HomeState extends State<Home> {
                   Expanded(
                     child: ListView(
                       padding: EdgeInsets.zero,
+                      // Fix drawer menu items
                       children: [
                         ListTile(
                           leading: const Icon(Icons.menu_book_outlined),
@@ -698,6 +746,7 @@ class _HomeState extends State<Home> {
                   onDestinationSelected: (index) {
                     setState(() => selectedTab = index);
                   },
+                  // Fix NavigationRail destinations
                   destinations: [
                     NavigationRailDestination(
                       icon: const Icon(Icons.menu_book_outlined),
@@ -721,6 +770,10 @@ class _HomeState extends State<Home> {
                     ),
                     NavigationRailDestination(
                       icon: const Icon(Icons.kitchen),
+                      label: Text(getTranslatedText('kitchen_tools')),
+                    ),
+                    NavigationRailDestination(
+                      icon: const Icon(Icons.settings),
                       label: Text(getTranslatedText('settings')),
                     ),
                     NavigationRailDestination(
@@ -1021,6 +1074,29 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildIngredientsTab() {
+    return Column(
+      children: [
+        TabBar(
+          controller: _ingredientsTabController,
+          tabs: [
+            Tab(text: 'Ingredients'),
+            Tab(text: 'Filters'),
+          ],
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _ingredientsTabController,
+            children: [
+              _buildIngredientsView(),
+              _buildFiltersView(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIngredientsView() {
     final allIngredients = [
       // Basic ingredients
       'Eggs', 'Milk', 'Butter', 'Salt', 'Pepper', 'Sugar',
@@ -1036,18 +1112,44 @@ class _HomeState extends State<Home> {
       'Cheese', 'Cream', 'Rice', 'Pasta', 'Bread'
     ];
 
-    // Filter ingredients based on meal type
+    // Filter ingredients based on all selected filters
     List<String> filteredIngredients = selectedMealType.isEmpty
         ? allIngredients
         : allIngredients.where((ingredient) {
-            return recipeDetails.entries.any((recipe) =>
-                recipe.value['mealType']?.toLowerCase() == selectedMealType &&
-                recipe.value['ingredients']?.toLowerCase().contains(ingredient.toLowerCase()) == true);
+            return recipeDetails.entries.any((recipe) {
+              final matchesMealType = selectedMealType.isEmpty || 
+                  recipe.value['mealType']?.toLowerCase() == selectedMealType;
+              final matchesDifficulty = selectedDifficulty.isEmpty || 
+                  recipe.value['difficulty']?.toLowerCase() == selectedDifficulty.toLowerCase();
+              final matchesCuisine = selectedCuisine.isEmpty || 
+                  recipe.value['cuisine'] == selectedCuisine;
+              
+              // Parse cooking time
+              final cookingTime = recipe.value['cookingTime']?.toLowerCase() ?? '';
+              final minutes = int.tryParse(cookingTime.split(' ')[0]) ?? 0;
+              final matchesTime = selectedTimeRange.isEmpty || 
+                  (selectedTimeRange == 'Quick (< 15min)' && minutes < 15) ||
+                  (selectedTimeRange == 'Medium (15-30min)' && minutes >= 15 && minutes <= 30) ||
+                  (selectedTimeRange == 'Long (> 30min)' && minutes > 30);
+
+              // Parse calories
+              final calories = int.tryParse(
+                  recipe.value['calories']?.split(' ')[0] ?? '0') ?? 0;
+              final matchesCalories = selectedCalorieRange.isEmpty ||
+                  (selectedCalorieRange == '0-200' && calories <= 200) ||
+                  (selectedCalorieRange == '201-400' && calories > 200 && calories <= 400) ||
+                  (selectedCalorieRange == '401+' && calories > 400);
+
+              return matchesMealType && matchesDifficulty && 
+                     matchesCuisine && matchesTime && matchesCalories &&
+                     recipe.value['ingredients']?.toLowerCase().contains(ingredient.toLowerCase()) == true;
+            });
           }).toList();
 
     return Column(
       children: [
         buildMealTypeFilters(),
+        // Existing ingredients selection area
         Container(
           constraints: BoxConstraints(
             minHeight: 100,
@@ -1208,9 +1310,6 @@ class _HomeState extends State<Home> {
                         selectedRecipe.isNotEmpty
                             ? selectedRecipe
                             : getTranslatedText('press_spin'),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -1753,5 +1852,129 @@ class _HomeState extends State<Home> {
         );
       },
     );
+  }
+
+  Widget _buildFiltersView() {
+    final difficulties = ['Easy', 'Medium', 'Hard'];
+    final cuisines = ['American', 'Italian', 'Asian', 'International', 'Asian Fusion'];
+    final timeRanges = ['Quick (< 15min)', 'Medium (15-30min)', 'Long (> 30min)'];
+
+    // Calculate total calories of selected recipes
+    int totalCalories = 0;
+    if (selectedIngredients.isNotEmpty) {
+      final recipes = getFilteredRecipes();
+      for (var recipe in recipes) {
+        final calories = int.tryParse(
+          recipeDetails[recipe]?['calories']?.split(' ')[0] ?? '0') ?? 0;
+        totalCalories += calories;
+      }
+    }
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        _buildFilterSection('Difficulty', difficulties, selectedDifficulty, 
+          (val) => setState(() => selectedDifficulty = val)),
+        _buildFilterSection('Cuisine', cuisines, selectedCuisine, 
+          (val) => setState(() => selectedCuisine = val)),
+        _buildFilterSection('Cooking Time', timeRanges, selectedTimeRange, 
+          (val) => setState(() => selectedTimeRange = val)),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Calorie Range', style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8.0,
+                  children: [
+                    FilterChip(
+                      label: const Text('Under 300'),
+                      selected: selectedCalorieRange == 'under-300',
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedCalorieRange = selected ? 'under-300' : '';
+                        });
+                      },
+                    ),
+                    FilterChip(
+                      label: const Text('300-600'),
+                      selected: selectedCalorieRange == '300-600',
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedCalorieRange = selected ? '300-600' : '';
+                        });
+                      },
+                    ),
+                    FilterChip(
+                      label: const Text('600-900'),
+                      selected: selectedCalorieRange == '600-900',
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedCalorieRange = selected ? '600-900' : '';
+                        });
+                      },
+                    ),
+                    FilterChip(
+                      label: const Text('Above 900'),
+                      selected: selectedCalorieRange == 'above-900',
+                      onSelected: (selected) {
+                        setState(() {
+                          selectedCalorieRange = selected ? 'above-900' : '';
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (selectedDifficulty.isNotEmpty || selectedCuisine.isNotEmpty || 
+            selectedTimeRange.isNotEmpty || calorieLimit != 2000)
+          ElevatedButton(
+            onPressed: () => setState(() {
+              selectedDifficulty = '';
+              selectedCuisine = '';
+              selectedTimeRange = '';
+              calorieLimit = 2000;
+            }),
+            child: const Text('Clear All Filters'),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildFilterSection(String title, List<String> options, String selected, Function(String) onChanged) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Wrap(
+              spacing: 8.0,
+              children: options.map((option) => FilterChip(
+                label: Text(option),
+                selected: selected == option,
+                onSelected: (bool selected) {
+                  onChanged(selected ? option : '');
+                },
+              )).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Add this near the top of the file, after the imports
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }
