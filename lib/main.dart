@@ -68,6 +68,18 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   String selectedTimeRange = '';
   int calorieLimit = 2000; // Add this with other state variables
 
+  // Replace these state variables
+  Map<String, List<String>> weeklyMeals = {
+    'Monday': [],
+    'Tuesday': [],
+    'Wednesday': [],
+    'Thursday': [],
+    'Friday': [],
+    'Saturday': [],
+    'Sunday': [],
+  };
+  // int? selectedMealSlot;  // Removed duplicate declaration
+
   late TabController _ingredientsTabController;
   late TextEditingController _calorieLimitController;
 
@@ -152,8 +164,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       'dinner': 'عشاء',
       'dessert': 'حلويات',
       'cuisine': 'المطبخ',
-      'difficulty': 'الصعوبة',
-      'cooking_time': 'وقت الطهي',
       'calories': 'السعرات الحرارية',
       'servings': 'عدد الحصص',
       'easy': 'سهل',
@@ -612,14 +622,29 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 
+  // Change these state variables
   String selectedRecipe = '';
   int previousTab = 0;
+  String? selectedDay;
+  int? selectedMealSlot;
 
   void switchToRecipeDetails(String recipeName) {
     setState(() {
-      previousTab = selectedTab;
-      selectedTab = 8; // Recipe details
-      selectedRecipe = recipeName;
+      if (selectedDay != null && selectedMealSlot != null) {
+        // Coming from meal planner
+        final mealList = weeklyMeals[selectedDay]!;
+        while (mealList.length <= selectedMealSlot!) {
+          mealList.add(''); // Fill with empty strings up to the selected slot
+        }
+        mealList[selectedMealSlot!] = recipeName;
+        selectedDay = null;
+        selectedMealSlot = null;
+        selectedTab = 8; // Return to meal planner
+      } else {
+        previousTab = selectedTab;
+        selectedTab = 9;
+        selectedRecipe = recipeName;
+      }
     });
   }
 
@@ -628,174 +653,173 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     final isWide = MediaQuery.of(context).size.width > 800;
     final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
     
-    return Stack(
-      children: [
-        Builder(
-          builder: (context) => Scaffold(
-            key: scaffoldKey,
-            appBar: !isWide ? AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () => scaffoldKey.currentState?.openDrawer(),
+    return Scaffold(
+      key: scaffoldKey,
+      appBar: !isWide ? AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () => scaffoldKey.currentState?.openDrawer(),
+        ),
+        title: Text('COOKUP', 
+          style: GoogleFonts.sairaStencilOne(fontSize: 24)
+        ),
+      ) : null,
+      drawer: !isWide ? Drawer(
+        child: Column(
+          children: [
+            Container(
+              height: 80, // Reduce header height
+              padding: EdgeInsets.all(16),
+              child: Text('COOKUP', 
+                style: GoogleFonts.sairaStencilOne(fontSize: 32)
               ),
-              title: Text('COOKUP', 
-                style: GoogleFonts.sairaStencilOne(fontSize: 24)
-              ),
-            ) : null,
-            drawer: !isWide ? Drawer(
-              child: Column(
+            ),
+            Expanded(
+              child: ListView(
+                padding: EdgeInsets.zero,
+                // Fix drawer menu items
                 children: [
-                  Container(
-                    height: 80, // Reduce header height
-                    padding: EdgeInsets.all(16),
-                    child: Text('COOKUP', 
-                      style: GoogleFonts.sairaStencilOne(fontSize: 32)
-                    ),
+                  ListTile(
+                    leading: const Icon(Icons.menu_book_outlined),
+                    title: Text(getTranslatedText('recipes')),
+                    selected: selectedTab == 0,
+                    onTap: () {
+                      setState(() => selectedTab = 0);
+                      Navigator.pop(context);
+                    },
                   ),
-                  Expanded(
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      // Fix drawer menu items
-                      children: [
-                        ListTile(
-                          leading: const Icon(Icons.menu_book_outlined),
-                          title: Text(getTranslatedText('recipes')),
-                          selected: selectedTab == 0,
-                          onTap: () {
-                            setState(() => selectedTab = 0);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.egg),
-                          title: Text(getTranslatedText('ingredients')),
-                          selected: selectedTab == 1,
-                          onTap: () {
-                            setState(() => selectedTab = 1);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.offline_pin),
-                          title: Text(getTranslatedText('saved_recipes')),
-                          selected: selectedTab == 2,
-                          onTap: () {
-                            setState(() => selectedTab = 2);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.casino),
-                          title: Text(getTranslatedText('recipe_roulette')),
-                          selected: selectedTab == 3,
-                          onTap: () {
-                            setState(() => selectedTab = 3);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.timer),
-                          title: Text(getTranslatedText('recipe_timers')),
-                          selected: selectedTab == 4,
-                          onTap: () {
-                            setState(() => selectedTab = 4);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.kitchen),
-                          title: Text(getTranslatedText('kitchen_tools')),
-                          selected: selectedTab == 5,
-                          onTap: () {
-                            setState(() => selectedTab = 5);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.settings),
-                          title: Text(getTranslatedText('settings')),
-                          selected: selectedTab == 6,
-                          onTap: () {
-                            setState(() => selectedTab = 6);
-                            Navigator.pop(context);
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.help),
-                          title: Text(getTranslatedText('help')),
-                          selected: selectedTab == 7,
-                          onTap: () {
-                            setState(() => selectedTab = 7);
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
+                  ListTile(
+                    leading: const Icon(Icons.egg),
+                    title: Text(getTranslatedText('ingredients')),
+                    selected: selectedTab == 1,
+                    onTap: () {
+                      setState(() => selectedTab = 1);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.offline_pin),
+                    title: Text(getTranslatedText('saved_recipes')),
+                    selected: selectedTab == 2,
+                    onTap: () {
+                      setState(() => selectedTab = 2);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.casino),
+                    title: Text(getTranslatedText('recipe_roulette')),
+                    selected: selectedTab == 3,
+                    onTap: () {
+                      setState(() => selectedTab = 3);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.timer),
+                    title: Text(getTranslatedText('recipe_timers')),
+                    selected: selectedTab == 4,
+                    onTap: () {
+                      setState(() => selectedTab = 4);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.kitchen),
+                    title: Text(getTranslatedText('kitchen_tools')),
+                    selected: selectedTab == 5,
+                    onTap: () {
+                      setState(() => selectedTab = 5);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings),
+                    title: Text(getTranslatedText('settings')),
+                    selected: selectedTab == 6,
+                    onTap: () {
+                      setState(() => selectedTab = 6);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.help),
+                    title: Text(getTranslatedText('help')),
+                    selected: selectedTab == 7,
+                    onTap: () {
+                      setState(() => selectedTab = 7);
+                      Navigator.pop(context);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.calendar_month),
+                    title: Text('Meal Planner'),
+                    selected: selectedTab == 8,
+                    onTap: () {
+                      setState(() => selectedTab = 8);
+                      Navigator.pop(context);
+                    },
                   ),
                 ],
               ),
-            ) : null,
-            body: Row(
-              children: [
-                if (isWide) NavigationRail(
-                  extended: true,
-                  leading: Text('COOKUP', 
-                    style: GoogleFonts.sairaStencilOne(fontSize: 42)
-                  ),
-                  selectedIndex: selectedTab > 7 ? previousTab : selectedTab,
-                  onDestinationSelected: (index) {
-                    setState(() => selectedTab = index);
-                  },
-                  // Fix NavigationRail destinations
-                  destinations: [
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.menu_book_outlined),
-                      label: Text(getTranslatedText('recipes')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.egg),
-                      label: Text(getTranslatedText('ingredients')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.offline_pin),
-                      label: Text(getTranslatedText('saved_recipes')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.casino),
-                      label: Text(getTranslatedText('recipe_roulette')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.timer),
-                      label: Text(getTranslatedText('recipe_timers')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.kitchen),
-                      label: Text(getTranslatedText('kitchen_tools')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.settings),
-                      label: Text(getTranslatedText('settings')),
-                    ),
-                    NavigationRailDestination(
-                      icon: const Icon(Icons.help),
-                      label: Text(getTranslatedText('help')),
-                    ),
-                  ],
-                ),
-                Expanded(
-                  child: _buildBody(selectedTab),
-                ),
-              ],
             ),
-          ),
+          ],
         ),
-        if (selectedTab == 8) 
-          Scaffold(
-            body: SafeArea(
-              child: _buildRecipeDetailsView(),
+      ) : null,
+      body: Row(
+        children: [
+          if (isWide) NavigationRail(
+            extended: true,
+            leading: Text('COOKUP', 
+              style: GoogleFonts.sairaStencilOne(fontSize: 42)
             ),
+            selectedIndex: selectedTab > 7 ? previousTab : selectedTab,
+            onDestinationSelected: (index) {
+              setState(() => selectedTab = index);
+            },
+            // Fix NavigationRail destinations
+            destinations: [
+              NavigationRailDestination(
+                icon: const Icon(Icons.menu_book_outlined),
+                label: Text(getTranslatedText('recipes')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.egg),
+                label: Text(getTranslatedText('ingredients')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.offline_pin),
+                label: Text(getTranslatedText('saved_recipes')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.casino),
+                label: Text(getTranslatedText('recipe_roulette')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.timer),
+                label: Text(getTranslatedText('recipe_timers')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.kitchen),
+                label: Text(getTranslatedText('settings')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.help),
+                label: Text(getTranslatedText('help')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.calendar_month),
+                label: Text('Meal Planner'),
+              ),
+            ],
           ),
-      ],
+          Expanded(
+            child: selectedTab == 9 
+              ? _buildRecipeDetailsView()
+              : _buildBody(selectedTab),
+          ),
+        ],
+      ),
     );
   }
 
@@ -817,6 +841,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         return _buildSettingsTab();
       case 7:
         return _buildHelpTab();
+      case 8:
+        return _buildMealPlannerTab();
       default:
         return _buildRecipesTab();
     }
@@ -967,6 +993,32 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   Widget _buildRecipesTab() {
     return Column(
       children: [
+        if (selectedDay != null) 
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Select ${selectedMealSlot == 0 ? "breakfast" : 
+                             selectedMealSlot == 1 ? "lunch" : "dinner"} for $selectedDay',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedDay = null;
+                      selectedMealSlot = null;
+                      selectedTab = 8; // Go back to planner
+                    });
+                  },
+                  child: const Text('Cancel'),
+                ),
+              ],
+            ),
+          ),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TextField(
@@ -1860,13 +1912,11 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     final timeRanges = ['Quick (< 15min)', 'Medium (15-30min)', 'Long (> 30min)'];
 
     // Calculate total calories of selected recipes
-    int totalCalories = 0;
     if (selectedIngredients.isNotEmpty) {
       final recipes = getFilteredRecipes();
       for (var recipe in recipes) {
         final calories = int.tryParse(
           recipeDetails[recipe]?['calories']?.split(' ')[0] ?? '0') ?? 0;
-        totalCalories += calories;
       }
     }
 
@@ -1968,6 +2018,113 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMealPlannerTab() {
+    return Column(
+      children: [
+        Container(
+          height: 100,
+          margin: const EdgeInsets.all(16),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: weeklyMeals.entries.map((day) {
+              bool isSelected = selectedDay == day.key;
+              return Container(
+                width: 100,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                child: Card(
+                  elevation: isSelected ? 8 : 1,
+                  color: isSelected ? Theme.of(context).primaryColor : null,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          day.key,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : null,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${day.value.length}/3 meals',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isSelected ? Colors.white70 : Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: weeklyMeals.length,
+            itemBuilder: (context, dayIndex) {
+              final day = weeklyMeals.entries.elementAt(dayIndex);
+              return Card(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        day.key,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 3,
+                      itemBuilder: (context, mealIndex) {
+                        final String mealType = mealIndex == 0 ? 'Breakfast' :
+                                             mealIndex == 1 ? 'Lunch' : 'Dinner';
+                        final String? recipe = day.value.length > mealIndex ? 
+                                            day.value[mealIndex] : null;
+                        
+                        return ListTile(
+                          leading: Icon(
+                            mealIndex == 0 ? Icons.breakfast_dining :
+                            mealIndex == 1 ? Icons.lunch_dining :
+                                           Icons.dinner_dining
+                          ),
+                          title: Text(mealType),
+                          subtitle: Text(recipe?.isNotEmpty == true ? recipe! : 'Tap to add meal'),
+                          trailing: recipe?.isNotEmpty == true ? IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              setState(() {
+                                day.value.removeAt(mealIndex);
+                              });
+                            },
+                          ) : null,
+                          onTap: () {
+                            setState(() {
+                              selectedDay = day.key;
+                              selectedMealSlot = mealIndex;
+                              selectedTab = 0; // Go to recipes
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
