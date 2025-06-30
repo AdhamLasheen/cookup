@@ -639,10 +639,10 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         mealList[selectedMealSlot!] = recipeName;
         selectedDay = null;
         selectedMealSlot = null;
-        selectedTab = 8; // Return to meal planner
+        selectedTab = 6; // Return to meal planner (index 6)
       } else {
         previousTab = selectedTab;
-        selectedTab = 9;
+        selectedTab = 9; // Recipe details
         selectedRecipe = recipeName;
       }
     });
@@ -734,8 +734,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.settings),
-                    title: Text(getTranslatedText('settings')),
+                    leading: const Icon(Icons.calendar_month),
+                    title: Text('Meal Planner'),
                     selected: selectedTab == 6,
                     onTap: () {
                       setState(() => selectedTab = 6);
@@ -743,8 +743,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.help),
-                    title: Text(getTranslatedText('help')),
+                    leading: const Icon(Icons.settings),
+                    title: Text(getTranslatedText('settings')),
                     selected: selectedTab == 7,
                     onTap: () {
                       setState(() => selectedTab = 7);
@@ -752,8 +752,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.calendar_month),
-                    title: Text('Meal Planner'),
+                    leading: const Icon(Icons.help),
+                    title: Text(getTranslatedText('help')),
                     selected: selectedTab == 8,
                     onTap: () {
                       setState(() => selectedTab = 8);
@@ -801,15 +801,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.kitchen),
+                label: Text(getTranslatedText('kitchen_tools')),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.calendar_month),
+                label: Text('Meal Planner'),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.settings),
                 label: Text(getTranslatedText('settings')),
               ),
               NavigationRailDestination(
                 icon: const Icon(Icons.help),
                 label: Text(getTranslatedText('help')),
-              ),
-              NavigationRailDestination(
-                icon: const Icon(Icons.calendar_month),
-                label: Text('Meal Planner'),
               ),
             ],
           ),
@@ -838,11 +842,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       case 5:
         return _buildKitchenToolsTab();
       case 6:
-        return _buildSettingsTab();
+        return _buildMealPlannerTab(); // Move meal planner here
       case 7:
-        return _buildHelpTab();
+        return _buildSettingsTab();
       case 8:
-        return _buildMealPlannerTab();
+        return _buildHelpTab();
+      case 9:
+        return _buildRecipeDetailsView();
       default:
         return _buildRecipesTab();
     }
