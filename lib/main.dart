@@ -58,7 +58,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   String selectedLanguage = 'English';
   final Map<String, String> recipeImages = {};
   String? lastRecipe; // Add this line after selectedRecipe declaration
-  bool useMinimumIngredients = false; // Add this near other state variables
+  bool useMinimumIngredients = true; // Changed to true by default
   String ingredientSortMode = 'alphabetical'; // Add this with other state variables
 
   // New state variables for filters
